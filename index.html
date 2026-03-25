@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Tierra Sur · Portal Vecinal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--tierra:#C4703A;--tierra-d:#9A5228;--tierra-l:#E8A97A;--verde:#4A7C59;--verde-l:#7AAF8A;--cream:#F5EFE6;--dark:#1C1208;--text:#3D2B1A;--muted:#8A7060;--white:#FEFCF9;--border:#E0D4C0;--ad:#FFF8F0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text)}
+.topbar{background:var(--dark);color:#AAA;font-size:12px;padding:6px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}
+.topbar a{color:var(--tierra-l);text-decoration:none}
+header{background:var(--white);border-bottom:3px solid var(--tierra);padding:0 32px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(28,18,8,.12)}
+.hd{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none;cursor:pointer}
+.logo-icon{width:42px;height:42px;background:var(--tierra);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.logo-text strong{font-family:'Playfair Display',serif;font-size:20px;color:var(--tierra);display:block;line-height:1.1}
+.logo-text span{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+nav{display:flex;gap:4px}
+nav a{padding:6px 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--text);text-decoration:none;transition:.2s;cursor:pointer}
+nav a:hover{background:var(--cream);color:var(--tierra)}
+nav a.active{background:var(--tierra);color:#fff}
+.btn-login{background:var(--verde);color:#fff!important;padding:8px 18px!important;border-radius:20px!important;font-weight:600!important}
+.btn-login:hover{background:var(--verde-l)!important}
+.hamburger{display:none;background:none;border:none;font-size:24px;cursor:pointer;padding:4px 8px;color:var(--text)}
+/* AD */
+.ad-banner{background:var(--ad);border:1.5px dashed var(--tierra-l);border-radius:8px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;color:var(--muted);cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.ad-banner:hover{border-color:var(--tierra)}
+.ad-label{position:absolute;top:4px;right:6px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:rgba(255,255,255,.7);padding:2px 5px;border-radius:3px}
+.ad-top{height:90px;margin:12px auto;max-width:1200px;padding:0 24px}
+.ad-top .ad-banner{height:90px}
+.ad-inline{height:100px;margin:24px 0}
+.ad-inline .ad-banner{height:100px}
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--tierra-d) 0%,var(--tierra) 50%,var(--tierra-l) 100%);color:#fff;padding:60px 24px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(30px,5vw,52px);font-weight:900;margin-bottom:12px;position:relative}
+.hero p{font-size:17px;opacity:.9;margin-bottom:24px;position:relative}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
+.btn{padding:12px 28px;border-radius:30px;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:.25s;text-decoration:none;display:inline-block;font-family:'DM Sans',sans-serif}
+.btn-prim{background:#fff;color:var(--tierra)}.btn-prim:hover{background:var(--cream);transform:translateY(-2px)}
+.btn-outl{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6)}.btn-outl:hover{background:rgba(255,255,255,.15)}
+.hero-stats{display:flex;gap:32px;justify-content:center;margin-top:36px;flex-wrap:wrap;position:relative}
+.stat{text-align:center}.stat strong{display:block;font-size:26px;font-weight:700}.stat span{font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.08em}
+/* LAYOUT */
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.layout{display:flex;gap:28px;align-items:flex-start;padding:32px 0}
+.main{flex:1;min-width:0}.sidebar{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:20px}
+.section{margin-bottom:36px}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.sec-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--tierra-d);display:flex;align-items:center;gap:8px}
+.see-all{font-size:13px;color:var(--tierra);text-decoration:none;font-weight:600;cursor:pointer}.see-all:hover{text-decoration:underline}
+/* NEWS */
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.news-card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.25s;cursor:pointer}
+.news-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(28,18,8,.12);border-color:var(--tierra-l)}
+.news-thumb{height:130px;background:linear-gradient(135deg,var(--tierra-l),var(--tierra));display:flex;align-items:center;justify-content:center;font-size:40px}
+.news-body{padding:14px 16px}.news-tag{display:inline-block;background:var(--cream);color:var(--tierra);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.news-body h3{font-size:15px;font-weight:600;line-height:1.4;margin-bottom:6px}.news-body p{font-size:13px;color:var(--muted);line-height:1.5}
+.news-footer{padding:10px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
+/* SRV */
+.srv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.srv-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px;transition:.25s;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
+.srv-card:hover{border-color:var(--verde-l);box-shadow:0 8px 24px rgba(74,124,89,.12)}
+.srv-icon{width:44px;height:44px;border-radius:12px;background:var(--cream);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.srv-info h4{font-size:14px;font-weight:600;margin-bottom:3px}.srv-info p{font-size:12px;color:var(--muted);line-height:1.4}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-top:6px;font-weight:600}
+.bv{background:var(--verde);color:#fff}.bt{background:var(--cream);color:var(--tierra);border:1px solid var(--tierra-l)}
+/* LOTS */
+.lots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.lot-card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.25s}
+.lot-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(28,18,8,.1)}
+.lot-thumb{height:150px;background:linear-gradient(135deg,#4A7C59,#7AAF8A);display:flex;align-items:center;justify-content:center;font-size:36px;position:relative}
+.lot-badge{position:absolute;top:10px;right:10px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;color:#fff}
+.lot-badge.disponible{background:var(--verde)}.lot-badge.reservado{background:var(--muted)}.lot-badge.vendido{background:var(--tierra)}
+.lot-body{padding:14px 16px}.lot-body h3{font-size:16px;font-weight:700;margin-bottom:4px}
+.lot-meta{font-size:13px;color:var(--muted);margin-bottom:10px}
+.lot-price{font-size:20px;font-weight:700;color:var(--tierra)}.lot-price span{font-size:13px;font-weight:400;color:var(--muted)}
+.lot-actions{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
+.btn-sm{flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:.2s;font-family:'DM Sans',sans-serif}
+.btn-verde{background:var(--verde);color:#fff}.btn-verde:hover{background:var(--verde-l)}
+.btn-ghost{background:var(--cream);color:var(--text)}.btn-ghost:hover{background:var(--border)}
+/* PILLS */
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pill{padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text);transition:.2s}
+.pill.active,.pill:hover{background:var(--tierra);color:#fff;border-color:var(--tierra)}
+/* MAP */
+.map-wrap{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.map-tb{padding:12px 16px;background:var(--dark);color:#fff;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.map-tb span{font-size:13px;font-weight:600}
+.map-legend{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px}
+.leg-dot{width:12px;height:12px;border-radius:3px}
+#map-view{width:100%;height:500px;background:#f0ede5;overflow:auto;position:relative}
+.lote{fill:#E8A97A;stroke:#C4703A;stroke-width:.8;cursor:pointer;transition:.15s}
+.lote:hover{fill:#C4703A}
+.lote.vendido{fill:#7AAF8A;stroke:#4A7C59}
+.lote.reservado{fill:#F0EBE0;stroke:#C4703A;stroke-dasharray:2,1}
+.lote.en-venta{fill:#FFD966;stroke:#B8860B}
+/* SIDEBAR */
+.widget{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.widget-hd{background:var(--tierra);color:#fff;padding:10px 14px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.widget-body{padding:14px}
+.wi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.wi:last-child{border-bottom:none}.wi:hover .wi-t{color:var(--tierra)}
+.wi-ico{font-size:20px;flex-shrink:0}.wi-t{font-size:13px;font-weight:600;line-height:1.3}.wi-m{font-size:11px;color:var(--muted);margin-top:2px}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(28,18,8,.6);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.3s}
+.overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--white);border-radius:20px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;padding:32px;transform:translateY(20px);transition:.3s;box-shadow:0 24px 60px rgba(28,18,8,.25)}
+.overlay.show .modal{transform:translateY(0)}
+.modal h2{font-family:'Playfair Display',serif;font-size:24px;color:var(--tierra-d);margin-bottom:6px}
+.modal>.sub{font-size:14px;color:var(--muted);margin-bottom:20px}
+.fg{margin-bottom:14px}.fg label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;background:var(--cream);color:var(--text);transition:.2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--tierra);background:var(--white)}
+.mf{display:flex;gap:10px;margin-top:20px}
+.btn-f{flex:1;padding:12px;border-radius:12px;border:none;cursor:pointer;font-size:15px;font-weight:700;transition:.2s;font-family:'DM Sans',sans-serif}
+.btn-tierra{background:var(--tierra);color:#fff}.btn-tierra:hover{background:var(--tierra-d)}
+.btn-cancel{background:var(--cream);color:var(--text)}.btn-cancel:hover{background:var(--border)}
+.tabs{display:flex;gap:4px;background:var(--cream);padding:4px;border-radius:12px;margin-bottom:20px}
+.tab-btn{flex:1;padding:8px;border:none;background:transparent;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);transition:.2s;font-family:'DM Sans',sans-serif}
+.tab-btn.active{background:var(--tierra);color:#fff}
+.tab-p{display:none}.tab-p.active{display:block}
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px;grid-column:1/-1}
+.spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--tierra);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:40px;color:var(--muted);grid-column:1/-1}
+/* SETUP BANNER */
+.setup-banner{background:#FFF3CD;border:1.5px solid #FFAA00;border-radius:10px;padding:12px 18px;margin:12px auto;max-width:1200px;font-size:13px;color:#7A4F00;display:none}
+.setup-banner code{background:rgba(0,0,0,.08);padding:2px 6px;border-radius:4px}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--dark);color:#fff;padding:14px 20px;border-radius:12px;font-size:14px;transform:translateY(80px);opacity:0;transition:.3s;z-index:300;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.toast.show{transform:translateY(0);opacity:1}.toast.error{background:#8B2020}.toast.ok{background:#2A6040}
+/* FOOTER */
+footer{background:var(--dark);color:#999;padding:40px 24px 24px;margin-top:40px}
+.ft{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
+footer h4{color:#fff;font-size:14px;font-weight:700;margin-bottom:12px}
+footer a{color:#999;text-decoration:none;display:block;font-size:13px;margin-bottom:6px;cursor:pointer}
+footer a:hover{color:var(--tierra-l)}.ft-logo strong{font-family:'Playfair Display',serif;font-size:22px;color:var(--tierra-l);display:block;margin-bottom:6px}
+.ft-bottom{text-align:center;margin-top:32px;padding-top:20px;border-top:1px solid #333;font-size:12px}
+@media(max-width:900px){.sidebar{display:none}.ft{grid-template-columns:1fr 1fr}nav{display:none}nav.open{display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;background:var(--white);padding:16px;gap:4px;box-shadow:0 8px 24px rgba(28,18,8,.12);z-index:99}.hamburger{display:block}}
+@media(max-width:600px){.ft{grid-template-columns:1fr}.lots-grid,.srv-grid,.news-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="setup-banner" id="setup-banner">
+  ⚙️ <strong>Modo demo:</strong> Editá las constantes <code>SUPABASE_URL</code> y <code>SUPABASE_KEY</code> en el <code>&lt;script&gt;</code> para conectar la base de datos real.
+</div>
+
+<div class="topbar">
+  <span>📍 Lomas de Zamora, Buenos Aires &nbsp;|&nbsp; Barrio Mi Tierra Sur</span>
+  <span><a href="#" onclick="openModal('publishModal')">Publicar aviso</a> &nbsp;|&nbsp; <a href="https://wa.me/5491199990000" target="_blank">WhatsApp Admin</a></span>
+</div>
+
+<header>
+  <div class="hd">
+    <div class="logo" onclick="goTo('inicio')">
+      <div class="logo-icon">🏡</div>
+      <div class="logo-text"><strong>Mi Tierra Sur</strong><span>Portal Vecinal</span></div>
+    </div>
+    <nav id="main-nav">
+      <a class="active" onclick="goTo('inicio',this)">Inicio</a>
+      <a onclick="goTo('noticias',this)">Noticias</a>
+      <a onclick="goTo('servicios',this)">Servicios</a>
+      <a onclick="goTo('lotes',this)">Lotes</a>
+      <a onclick="goTo('mapa',this)">Mapa</a>
+      <a class="btn-login" onclick="openModal('loginModal')">Ingresar</a>
+    </nav>
+    <button class="hamburger" onclick="document.getElementById('main-nav').classList.toggle('open')">☰</button>
+  </div>
+</header>
+
+<div class="ad-top container">
+  <div class="ad-banner" onclick="openModal('publishModal')">
+    <div class="ad-label">Publicidad</div>
+    <span style="font-size:24px">📢</span>
+    <div><strong style="font-size:14px;color:var(--tierra)">¿Tenés un negocio?</strong>
+    <p style="font-size:12px">Anunciá aquí · Llegá a todos los vecinos de Mi Tierra Sur</p></div>
+  </div>
+</div>
+
+<!-- INICIO -->
+<div id="sec-inicio">
+  <div class="hero">
+    <h1>🏡 Mi Tierra Sur</h1>
+    <p>Tu portal vecinal · Noticias, servicios, lotes y comunidad</p>
+    <div class="hero-btns">
+      <span class="btn btn-prim" onclick="goTo('servicios')">Ver Servicios</span>
+      <span class="btn btn-outl" onclick="goTo('lotes')">Lotes Disponibles</span>
+      <span class="btn btn-outl" onclick="openModal('loginModal')">Registrarme</span>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><strong id="st-lotes">–</strong><span>Lotes disponibles</span></div>
+      <div class="stat"><strong id="st-srv">–</strong><span>Servicios</span></div>
+      <div class="stat"><strong id="st-news">–</strong><span>Noticias</span></div>
+      <div class="stat"><strong>6</strong><span>Manzanas</span></div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="layout">
+      <div class="main">
+        <div class="section">
+          <div class="sec-hd"><h2 class="sec-title">📰 Últimas Noticias</h2><span class="see-all" onclick="goTo('noticias')">Ver todas →</span></div>
+          <div class="news-grid" id="home-news"><div class="loading"><div class="spinner"></div><br>Cargando…</div></div>
+        </div>
+        <div class="ad-inline"><div class="ad-banner" onclick="openModal('publishModal')">
+          <div class="ad-label">Publicidad</div><span style="font-size:28px">🔧</span>
+          <div><strong style="font-size:14px;color:var(--tierra)">Tu negocio aquí</strong><p style="font-size:12px">Espacios publicitarios disponibles · Consultanos</p></div>
+        </div></div>
+        <div class="section">
+          <div class="sec-hd"><h2 class="sec-title">🔧 Servicios Destacados</h2><span class="see-all" onclick="goTo('servicios')">Ver todos →</span></div>
+          <div class="srv-grid" id="home-srv"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+        <div class="section">
+          <div class="sec-hd"><h2 class="sec-title">🏞️ Lotes en Venta</h2><span class="see-all" onclick="goTo('lotes')">Ver todos →</span></div>
+          <div class="lots-grid" id="home-lots"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+      <aside class="sidebar">
+        <div style="background:var(--ad);border:1.5px dashed var(--tierra-l);border-radius:14px;padding:20px;text-align:center;cursor:pointer" onclick="openModal('publishModal')">
+          <div style="font-size:40px">📦</div>
+          <strong style="font-size:13px;color:var(--tierra);display:block;margin:8px 0 4px">Tu anuncio aquí</strong>
+          <p style="font-size:11px;color:var(--muted)">Llegá a los vecinos de Mi Tierra Sur</p>
+          <button class="btn-sm btn-tierra" style="width:100%;margin-top:12px;border-radius:20px">Publicar</button>
+        </div>
+        <div class="widget">
+          <div class="widget-hd">📣 Avisos Urgentes</div>
+          <div class="widget-body">
+            <div class="wi"><span class="wi-ico">🚰</span><div><div class="wi-t">Corte agua viernes 28</div><div class="wi-m">8:00–16:00 hs</div></div></div>
+            <div class="wi"><span class="wi-ico">🏗️</span><div><div class="wi-t">Obras Calle Jauretche</div><div class="wi-m">Cierre parcial</div></div></div>
+            <div class="wi"><span class="wi-ico">♻️</span><div><div class="wi-t">Recolección especial</div><div class="wi-m">Miér y viernes</div></div></div>
+          </div>
+        </div>
+        <div class="widget">
+          <div class="widget-hd">📞 Administración</div>
+          <div class="widget-body" style="font-size:13px;line-height:2.2">
+            <div>📱 <a href="https://wa.me/5491199990000" style="color:var(--tierra);font-weight:600">WhatsApp</a></div>
+            <div>✉️ admin@miterrasur.com.ar</div>
+            <div>🕐 Lun–Vie 8–18hs</div>
+            <button class="btn-sm btn-verde" style="width:100%;margin-top:10px;border-radius:8px" onclick="showToast('📱 Abriendo WhatsApp…')">Escribir por WA</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<!-- NOTICIAS -->
+<div id="sec-noticias" style="display:none">
+  <div class="container" style="padding-top:32px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h1 class="sec-title" style="font-size:28px">📰 Noticias del Barrio</h1>
+    </div>
+    <div class="pills" id="npills">
+      <span class="pill active" onclick="filterN(null,this)">Todas</span>
+      <span class="pill" onclick="filterN('obras',this)">Obras</span>
+      <span class="pill" onclick="filterN('servicios',this)">Servicios</span>
+      <span class="pill" onclick="filterN('comunidad',this)">Comunidad</span>
+      <span class="pill" onclick="filterN('seguridad',this)">Seguridad</span>
+      <span class="pill" onclick="filterN('reuniones',this)">Reuniones</span>
+    </div>
+    <div class="news-grid" id="all-news"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- SERVICIOS -->
+<div id="sec-servicios" style="display:none">
+  <div class="container" style="padding-top:32px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h1 class="sec-title" style="font-size:28px">🔧 Servicios del Barrio</h1>
+      <button class="btn btn-prim" style="background:var(--tierra);color:#fff" onclick="openModal('publishModal')">+ Publicar servicio</button>
+    </div>
+    <div class="pills" id="spills">
+      <span class="pill active" onclick="filterS(null,this)">Todos</span>
+      <span class="pill" onclick="filterS('hogar',this)">🏠 Hogar</span>
+      <span class="pill" onclick="filterS('salud',this)">🏥 Salud</span>
+      <span class="pill" onclick="filterS('educacion',this)">📚 Educación</span>
+      <span class="pill" onclick="filterS('comercio',this)">🛒 Comercio</span>
+      <span class="pill" onclick="filterS('transporte',this)">🚗 Transporte</span>
+    </div>
+    <div class="srv-grid" id="all-srv"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- LOTES -->
+<div id="sec-lotes" style="display:none">
+  <div class="container" style="padding-top:32px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h1 class="sec-title" style="font-size:28px">🏞️ Lotes en Venta</h1>
+      <button class="btn btn-prim" style="background:var(--verde);color:#fff" onclick="openModal('publishModal')">+ Publicar lote</button>
+    </div>
+    <div class="pills" id="lpills">
+      <span class="pill active" onclick="filterL(null,this)">Todos</span>
+      <span class="pill" onclick="filterL('disponible',this)">Disponibles</span>
+      <span class="pill" onclick="filterL('reservado',this)">Reservados</span>
+      <span class="pill" onclick="filterL('fin',this)">Con financiación</span>
+    </div>
+    <div class="lots-grid" id="all-lots"><div class="loading"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- MAPA -->
+<div id="sec-mapa" style="display:none">
+  <div class="container" style="padding-top:32px">
+    <h1 class="sec-title" style="font-size:28px;margin-bottom:16px">🗺️ Mapa del Barrio</h1>
+    <div class="map-wrap">
+      <div class="map-tb">
+        <span>🏡 Mi Tierra Sur · Fracción 2</span>
+        <div class="map-legend">
+          <div class="leg"><div class="leg-dot" style="background:#E8A97A"></div>Disponible</div>
+          <div class="leg"><div class="leg-dot" style="background:#7AAF8A"></div>Vendido</div>
+          <div class="leg"><div class="leg-dot" style="background:#F0EBE0;border:1px solid #C4703A"></div>Reservado</div>
+          <div class="leg"><div class="leg-dot" style="background:#FFD966"></div>En venta</div>
+        </div>
+      </div>
+      <div id="map-view">
+        <div id="map-tt" style="position:absolute;background:var(--dark);color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;pointer-events:none;opacity:0;transition:.15s;z-index:10;min-width:150px;box-shadow:0 4px 16px rgba(0,0,0,.3)"></div>
+        <div id="map-inner"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="ft">
+    <div>
+      <div class="ft-logo"><strong>Mi Tierra Sur</strong><span style="font-size:13px">Portal Vecinal Oficial</span></div>
+      <p style="font-size:13px;margin-top:8px;line-height:1.6">Canal de información y servicios para propietarios del Barrio Mi Tierra Sur, Lomas de Zamora.</p>
+    </div>
+    <div><h4>Secciones</h4><a onclick="goTo('noticias')">Noticias</a><a onclick="goTo('servicios')">Servicios</a><a onclick="goTo('lotes')">Lotes</a><a onclick="goTo('mapa')">Mapa</a></div>
+    <div><h4>Vecinos</h4><a onclick="openModal('loginModal')">Registrarme</a><a onclick="openModal('loginModal')">Mi cuenta</a><a onclick="openModal('publishModal')">Publicar servicio</a><a onclick="openModal('publishModal')">Vender lote</a></div>
+    <div><h4>Contacto</h4><a href="https://wa.me/5491199990000">WhatsApp Admin</a><a>admin@miterrasur.com.ar</a><a>Política de Privacidad</a><a>Términos de uso</a></div>
+  </div>
+  <div class="ft-bottom">© 2025 Mi Tierra Sur · Todos los derechos reservados · <span style="color:var(--tierra-l)">Portal para vecinos del barrio</span></div>
+</footer>
+
+<!-- MODAL LOGIN -->
+<div class="overlay" id="loginModal" onclick="closeOut(event,'loginModal')">
+  <div class="modal">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="tabSw('login')">Ingresar</button>
+      <button class="tab-btn" onclick="tabSw('reg')">Registrarme</button>
+    </div>
+    <div class="tab-p active" id="tp-login">
+      <h2>Bienvenido/a 👋</h2><p class="sub">Ingresá con tu cuenta de vecino</p>
+      <div class="fg"><label>Email</label><input id="l-email" type="email" placeholder="tu@email.com"></div>
+      <div class="fg"><label>Contraseña</label><input id="l-pass" type="password" placeholder="••••••••"></div>
+      <div class="mf"><button class="btn-f btn-tierra" onclick="doLogin()">Ingresar</button><button class="btn-f btn-cancel" onclick="closeModal('loginModal')">Cancelar</button></div>
+    </div>
+    <div class="tab-p" id="tp-reg">
+      <h2>Crear cuenta 🏡</h2><p class="sub">Registrate como vecino del barrio</p>
+      <div class="fg"><label>Nombre completo</label><input id="r-nombre" type="text" placeholder="Tu nombre"></div>
+      <div class="fg"><label>Email</label><input id="r-email" type="email" placeholder="tu@email.com"></div>
+      <div class="fg"><label>Contraseña</label><input id="r-pass" type="password" placeholder="Mínimo 6 caracteres"></div>
+      <div class="fg"><label>Manzana / Lote</label><input id="r-mz" type="text" placeholder="Ej: BK · Lote 5"></div>
+      <div class="fg"><label>Teléfono</label><input id="r-tel" type="tel" placeholder="11-xxxx-xxxx"></div>
+      <div class="mf"><button class="btn-f btn-tierra" onclick="doRegister()">Crear cuenta</button><button class="btn-f btn-cancel" onclick="closeModal('loginModal')">Cancelar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PUBLICAR -->
+<div class="overlay" id="publishModal" onclick="closeOut(event,'publishModal')">
+  <div class="modal">
+    <h2>Publicar anuncio 📢</h2><p class="sub">Llegá a todos los vecinos de Mi Tierra Sur</p>
+    <div class="fg"><label>Tipo de publicación</label>
+      <select id="p-tipo">
+        <option value="publicidad">📢 Banner publicitario (pago)</option>
+        <option value="servicio">🔧 Servicio del barrio</option>
+        <option value="lote">🏞️ Venta de lote</option>
+        <option value="aviso">📰 Aviso vecinal</option>
+      </select>
+    </div>
+    <div class="fg"><label>Nombre / Título</label><input id="p-titulo" type="text" placeholder="Ej: Plomería Rodríguez"></div>
+    <div class="fg"><label>Descripción</label><textarea id="p-desc" rows="3" placeholder="Breve descripción…"></textarea></div>
+    <div class="fg"><label>Tu nombre</label><input id="p-nombre" type="text" placeholder="Tu nombre completo"></div>
+    <div class="fg"><label>Teléfono</label><input id="p-tel" type="tel" placeholder="11-xxxx-xxxx"></div>
+    <div class="fg"><label>Email</label><input id="p-email" type="email" placeholder="tu@email.com"></div>
+    <div class="mf"><button class="btn-f btn-tierra" onclick="doPublicar()">Enviar publicación</button><button class="btn-f btn-cancel" onclick="closeModal('publishModal')">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- MODAL CONTACTAR -->
+<div class="overlay" id="contactModal" onclick="closeOut(event,'contactModal')">
+  <div class="modal">
+    <h2>Contactar 📞</h2><p class="sub" id="c-desc">Enviá tu consulta</p>
+    <div class="fg"><label>Tu nombre</label><input id="c-nombre" type="text" placeholder="Tu nombre"></div>
+    <div class="fg"><label>Tu teléfono</label><input id="c-tel" type="tel" placeholder="11-xxxx-xxxx"></div>
+    <div class="fg"><label>Mensaje</label><textarea id="c-msg" rows="3" placeholder="Hola, necesito…"></textarea></div>
+    <input type="hidden" id="c-ref"><input type="hidden" id="c-tipo" value="servicio">
+    <div class="mf"><button class="btn-f btn-tierra" onclick="doContactar()">Enviar consulta</button><button class="btn-f btn-cancel" onclick="closeModal('contactModal')">Cancelar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  SUPABASE CONFIG  ← reemplazá con tus datos reales
+//  supabase.com > tu proyecto > Settings > API
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
+const SUPABASE_KEY = 'TU_ANON_PUBLIC_KEY';
+
+let db = null, ready = false;
+try {
+  if (!SUPABASE_URL.includes('TU_PROYECTO')) {
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    ready = true;
+  } else {
+    document.getElementById('setup-banner').style.display = 'block';
+  }
+} catch(e) { console.warn('Supabase no inicializado'); }
+
+// ── MOCK DATA (demo sin Supabase) ──
+const MOCK_N = [
+  {id:1,icono:'🏗️',categoria:'obras',titulo:'Asfaltado de Calle Arturo Jauretche avanza al 60%',descripcion:'La empresa confirmó finalización antes del 30 de abril.',created_at:new Date(Date.now()-2*864e5)},
+  {id:2,icono:'💧',categoria:'servicios',titulo:'Corte de agua programado el viernes 28',descripcion:'ABSA informa corte entre 8:00 y 16:00 hs.',created_at:new Date(Date.now()-5*864e5)},
+  {id:3,icono:'🌳',categoria:'comunidad',titulo:'Jornada de limpieza barrial sábado 29 a las 9hs',descripcion:'Se invita a todos los vecinos. Bolsas y guantes provistos.',created_at:new Date(Date.now()-7*864e5)},
+  {id:4,icono:'🔒',categoria:'seguridad',titulo:'Nuevo sistema de cámaras en acceso principal',descripcion:'4 cámaras HD con visión nocturna instaladas.',created_at:new Date(Date.now()-14*864e5)},
+  {id:5,icono:'📋',categoria:'reuniones',titulo:'Asamblea de propietarios el 5 de abril',descripcion:'Presupuesto anual y mejoras en espacios comunes.',created_at:new Date(Date.now()-21*864e5)},
+  {id:6,icono:'🎨',categoria:'comunidad',titulo:'Se pinta el salón de usos múltiples',descripcion:'Trabajos desde el lunes 31 de marzo.',created_at:new Date(Date.now()-30*864e5)},
+];
+const MOCK_S = [
+  {id:1,icono:'🔧',nombre:'Plomería Rodríguez',descripcion:'Urgencias 24hs · Cañerías, pérdidas',categoria:'hogar',telefono:'11-1234-5678',verificado:true,es_vecino:true},
+  {id:2,icono:'⚡',nombre:'Electricista García',descripcion:'Instalaciones y reparaciones',categoria:'hogar',telefono:'11-2345-6789',verificado:true,es_vecino:true},
+  {id:3,icono:'🌿',nombre:'Jardines Martínez',descripcion:'Poda y mantenimiento de espacios verdes',categoria:'hogar',telefono:'11-3456-7890',verificado:false,es_vecino:true},
+  {id:4,icono:'🍕',nombre:'Pizzería La Esquina',descripcion:'Delivery al barrio · Desde las 18hs',categoria:'comercio',telefono:'11-4567-8901',verificado:false,es_vecino:false},
+  {id:5,icono:'🚗',nombre:'Remises El Barrio',descripcion:'Servicio exclusivo para vecinos',categoria:'transporte',telefono:'11-5678-9012',verificado:true,es_vecino:true},
+  {id:6,icono:'📚',nombre:'Apoyo Escolar Lic. Ana',descripcion:'Primaria y secundaria · Todos los años',categoria:'educacion',telefono:'11-6789-0123',verificado:false,es_vecino:true},
+  {id:7,icono:'🏥',nombre:'Enfermería a domicilio',descripcion:'Inyecciones, curaciones, seguimiento',categoria:'salud',telefono:'11-7890-1234',verificado:true,es_vecino:true},
+  {id:8,icono:'🛒',nombre:'Almacén Don Pedro',descripcion:'Productos de primera necesidad',categoria:'comercio',telefono:'11-8901-2345',verificado:false,es_vecino:false},
+];
+const MOCK_L = [
+  {id:1,numero:'5',manzana:'BK',superficie:300,precio_usd:18000,estado:'disponible',financiacion:true},
+  {id:2,numero:'12',manzana:'BM',superficie:280,precio_usd:16500,estado:'disponible',financiacion:false},
+  {id:3,numero:'3',manzana:'AT',superficie:320,precio_usd:21000,estado:'disponible',financiacion:true},
+  {id:4,numero:'8',manzana:'AW',superficie:260,precio_usd:15000,estado:'disponible',financiacion:false},
+  {id:5,numero:'17',manzana:'BS',superficie:300,precio_usd:17500,estado:'reservado',financiacion:true},
+  {id:6,numero:'22',manzana:'BN',superficie:290,precio_usd:19000,estado:'disponible',financiacion:true},
+];
+
+// ── FETCH ──
+async function fetchN(cat){
+  if(!ready){ return cat?MOCK_N.filter(x=>x.categoria===cat):MOCK_N; }
+  let q=db.from('noticias').select('*').eq('activo',true).order('created_at',{ascending:false});
+  if(cat) q=q.eq('categoria',cat);
+  const{data,error}=await q;
+  return error?MOCK_N:data;
+}
+async function fetchS(cat){
+  if(!ready){ return cat?MOCK_S.filter(x=>x.categoria===cat):MOCK_S; }
+  let q=db.from('servicios').select('*').eq('activo',true).order('created_at',{ascending:false});
+  if(cat) q=q.eq('categoria',cat);
+  const{data,error}=await q;
+  return error?MOCK_S:data;
+}
+async function fetchL(f){
+  if(!ready){
+    if(!f) return MOCK_L;
+    if(f==='fin') return MOCK_L.filter(x=>x.financiacion);
+    return MOCK_L.filter(x=>x.estado===f);
+  }
+  let q=db.from('lotes').select('*').eq('activo',true).order('created_at',{ascending:false});
+  if(f&&f!=='fin') q=q.eq('estado',f);
+  if(f==='fin') q=q.eq('financiacion',true);
+  const{data,error}=await q;
+  return error?MOCK_L:data;
+}
+
+// ── RENDER ──
+function ago(d){
+  const diff=(Date.now()-new Date(d))/(864e5);
+  if(diff<1)return'Hoy';if(diff<2)return'Ayer';
+  if(diff<7)return`Hace ${Math.floor(diff)} días`;
+  if(diff<30)return`Hace ${Math.floor(diff/7)} sem`;
+  return`Hace ${Math.floor(diff/30)} meses`;
+}
+function nCard(n){return`<div class="news-card"><div class="news-thumb">${n.icono||'📰'}</div><div class="news-body"><span class="news-tag">${n.categoria||'general'}</span><h3>${n.titulo}</h3><p>${n.descripcion||''}</p></div><div class="news-footer"><span>${ago(n.created_at)}</span><span>📖 2 min</span></div></div>`;}
+function sCard(s){const b=s.verificado?`<span class="badge bv">✓ Verificado</span>`:s.es_vecino?`<span class="badge bt">Vecino</span>`:'';return`<div class="srv-card" onclick="openContact('${s.id}','${(s.nombre||'').replace(/'/g,"\\'")}','${s.telefono||''}')"><div class="srv-icon">${s.icono||'🔧'}</div><div class="srv-info"><h4>${s.nombre}</h4><p>${s.descripcion||''}</p>${b}</div></div>`;}
+function lCard(l){const st=l.estado||'disponible',lbl=st==='disponible'?'Disponible':st==='reservado'?'Reservado':'Vendido';return`<div class="lot-card"><div class="lot-thumb">🏞️<div class="lot-badge ${st}">${lbl}</div></div><div class="lot-body"><h3>Lote ${l.numero} · Mzna. ${l.manzana}</h3><div class="lot-meta">📐 ${l.superficie} m²${l.financiacion?' · 💳 Financiación':''}</div><div class="lot-price">USD ${Number(l.precio_usd).toLocaleString('es-AR')} <span>USD</span></div></div><div class="lot-actions"><button class="btn-sm btn-verde" onclick="openContact('${l.id}','Lote ${l.numero} Mzna.${l.manzana}','${l.contacto_tel||''}','lote')">Consultar</button><button class="btn-sm btn-ghost" onclick="goTo('mapa')">Ver mapa</button></div></div>`;}
+
+function setHTML(id,html){document.getElementById(id).innerHTML=html||'<div class="empty">Sin resultados.</div>';}
+
+async function loadHome(){
+  const[news,srv,lots]=await Promise.all([fetchN(),fetchS(),fetchL()]);
+  document.getElementById('st-lotes').textContent=lots.filter(x=>x.estado==='disponible').length;
+  document.getElementById('st-srv').textContent=srv.length;
+  document.getElementById('st-news').textContent=news.length;
+  setHTML('home-news',news.slice(0,3).map(nCard).join(''));
+  setHTML('home-srv',srv.slice(0,4).map(sCard).join(''));
+  setHTML('home-lots',lots.filter(x=>x.estado!=='vendido').slice(0,3).map(lCard).join(''));
+}
+async function loadN(cat){setHTML('all-news','<div class="loading"><div class="spinner"></div></div>');setHTML('all-news',(await fetchN(cat)).map(nCard).join(''));}
+async function loadS(cat){setHTML('all-srv','<div class="loading"><div class="spinner"></div></div>');setHTML('all-srv',(await fetchS(cat)).map(sCard).join(''));}
+async function loadL(f){setHTML('all-lots','<div class="loading"><div class="spinner"></div></div>');setHTML('all-lots',(await fetchL(f)).map(lCard).join(''));}
+
+// ── FILTERS ──
+function filterN(c,el){document.querySelectorAll('#npills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');loadN(c);}
+function filterS(c,el){document.querySelectorAll('#spills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');loadS(c);}
+function filterL(f,el){document.querySelectorAll('#lpills .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');loadL(f);}
+
+// ── NAV ──
+const SECS=['inicio','noticias','servicios','lotes','mapa'];
+let loadedSecs={};
+function goTo(name,el){
+  SECS.forEach(s=>document.getElementById('sec-'+s).style.display=s===name?'':'none');
+  document.querySelectorAll('nav a:not(.btn-login)').forEach(a=>a.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else{const i=SECS.indexOf(name);const links=document.querySelectorAll('nav a:not(.btn-login)');if(links[i])links[i].classList.add('active');}
+  if(!loadedSecs[name]){
+    loadedSecs[name]=true;
+    if(name==='noticias') loadN(null);
+    if(name==='servicios') loadS(null);
+    if(name==='lotes') loadL(null);
+    if(name==='mapa') buildMap();
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('main-nav').classList.remove('open');
+}
+
+// ── MODALS ──
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function closeOut(e,id){if(e.target.id===id)closeModal(id);}
+function tabSw(t){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='reg')));
+  document.getElementById('tp-login').classList.toggle('active',t==='login');
+  document.getElementById('tp-reg').classList.toggle('active',t==='reg');
+}
+
+// ── AUTH ──
+async function doLogin(){
+  const email=document.getElementById('l-email').value.trim(),pass=document.getElementById('l-pass').value;
+  if(!email||!pass){showToast('Completá email y contraseña','error');return;}
+  if(!ready){closeModal('loginModal');showToast('✅ Sesión iniciada (demo)','ok');return;}
+  const{error}=await db.auth.signInWithPassword({email,password:pass});
+  if(error){showToast('❌ '+error.message,'error');return;}
+  closeModal('loginModal');showToast('✅ Sesión iniciada','ok');
+}
+async function doRegister(){
+  const nombre=document.getElementById('r-nombre').value.trim(),email=document.getElementById('r-email').value.trim(),pass=document.getElementById('r-pass').value,mz=document.getElementById('r-mz').value.trim(),tel=document.getElementById('r-tel').value.trim();
+  if(!nombre||!email||!pass){showToast('Completá nombre, email y contraseña','error');return;}
+  if(!ready){closeModal('loginModal');showToast('✅ Registro exitoso (demo)','ok');return;}
+  const{data,error}=await db.auth.signUp({email,password:pass,options:{data:{nombre,manzana:mz,telefono:tel}}});
+  if(error){showToast('❌ '+error.message,'error');return;}
+  if(data?.user) await db.from('vecinos').insert({id:data.user.id,nombre,email,telefono:tel,manzana:mz.split('·')[0]?.trim(),lote:mz.split('·')[1]?.trim()});
+  closeModal('loginModal');showToast('✅ ¡Registro enviado! Revisá tu email para confirmar.','ok');
+}
+
+// ── PUBLICAR ──
+async function doPublicar(){
+  const titulo=document.getElementById('p-titulo').value.trim(),nombre=document.getElementById('p-nombre').value.trim(),tel=document.getElementById('p-tel').value.trim(),email=document.getElementById('p-email').value.trim(),tipo=document.getElementById('p-tipo').value,desc=document.getElementById('p-desc').value.trim();
+  if(!titulo||!nombre){showToast('Completá al menos título y nombre','error');return;}
+  if(!ready){closeModal('publishModal');showToast('📨 Publicación enviada (demo)','ok');return;}
+  const{error}=await db.from('consultas').insert({nombre,email,telefono:tel,tipo,mensaje:`[${tipo.toUpperCase()}] ${titulo} — ${desc}`});
+  if(error){showToast('❌ Error al enviar','error');return;}
+  closeModal('publishModal');showToast('📨 Publicación enviada. Te contactamos en 24hs!','ok');
+}
+
+// ── CONTACTAR ──
+function openContact(refId,nombre,tel,tipo='servicio'){
+  document.getElementById('c-desc').textContent=`Contactar: ${nombre}${tel?' · '+tel:''}`;
+  document.getElementById('c-ref').value=refId;
+  document.getElementById('c-tipo').value=tipo;
+  openModal('contactModal');
+}
+async function doContactar(){
+  const nombre=document.getElementById('c-nombre').value.trim(),tel=document.getElementById('c-tel').value.trim(),msg=document.getElementById('c-msg').value.trim(),refId=document.getElementById('c-ref').value,tipo=document.getElementById('c-tipo').value;
+  if(!nombre){showToast('Ingresá tu nombre','error');return;}
+  if(!ready){closeModal('contactModal');showToast('✅ Consulta enviada (demo)','ok');return;}
+  const{error}=await db.from('consultas').insert({nombre,telefono:tel,mensaje:msg,ref_id:refId||null,tipo});
+  if(error){showToast('❌ Error al enviar','error');return;}
+  closeModal('contactModal');showToast('✅ Consulta enviada al proveedor','ok');
+}
+
+// ── TOAST ──
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);}
+
+// ── MAPA ──
+function buildMap(){
+  if(document.getElementById('map-inner').innerHTML.trim())return;
+  const inSale=['BK-5','BM-12','AT-3','AW-8','BS-17','BN-22'],
+        sold=['BG-1','BG-3','BG-5','BK-1','BK-2','BK-3','AN-1','AN-4','AN-6','AR-5','AR-8','AS-3'],
+        resv=['BM-7','BN-14','BS-2','AT-9'];
+  const mzRows=[
+    {id:'BG',yS:24,yE:100,s:'l'},{id:'AN',yS:24,yE:100,s:'r'},
+    {id:'BK',yS:118,yE:210,s:'l'},{id:'AR',yS:118,yE:210,s:'r'},
+    {id:'BM',yS:228,yE:310,s:'l'},{id:'AS',yS:228,yE:310,s:'r'},
+    {id:'BN',yS:328,yE:400,s:'l'},{id:'AT',yS:328,yE:400,s:'r'},
+    {id:'BR',yS:418,yE:490,s:'l'},{id:'AW',yS:418,yE:490,s:'r'},
+    {id:'BS',yS:508,yE:574,s:'l'},{id:'AX',yS:508,yE:574,s:'r'},
+  ];
+  const hSt=[{y:100,l:'Calle Fabriciano Colmenares'},{y:210,l:'Calle Vicenta Nuñes'},{y:310,l:'Calle Arturo Jauretche'},{y:400,l:'Calle Jose Hernandez'},{y:490,l:'Calle Mary Alarcon'}];
+  let svg=`<svg viewBox="0 0 760 600" xmlns="http://www.w3.org/2000/svg" width="760" height="600">
+  <rect width="760" height="600" fill="#EDE8DF"/>
+  <rect x="0" y="0" width="760" height="24" fill="#D4C9B8"/>
+  <text x="380" y="15" font-size="9" fill="#8A7060" text-anchor="middle" font-family="DM Sans,sans-serif">Calle Irene Telechea</text>
+  <rect x="0" y="574" width="760" height="26" fill="#D4C9B8"/>
+  <text x="380" y="589" font-size="9" fill="#8A7060" text-anchor="middle" font-family="DM Sans,sans-serif">Calle Falucho</text>
+  <rect x="0" y="0" width="26" height="600" fill="#D4C9B8"/>
+  <text x="13" y="300" font-size="8" fill="#8A7060" text-anchor="middle" transform="rotate(-90,13,300)" font-family="DM Sans,sans-serif">Calle Montevideo</text>
+  <rect x="734" y="0" width="26" height="600" fill="#D4C9B8"/>
+  <text x="747" y="300" font-size="8" fill="#8A7060" text-anchor="middle" transform="rotate(-90,747,300)" font-family="DM Sans,sans-serif">Calle Roque Saenz Peña</text>
+  <rect x="350" y="0" width="28" height="600" fill="#D4C9B8"/>
+  <text x="364" y="300" font-size="8" fill="#8A7060" text-anchor="middle" transform="rotate(-90,364,300)" font-family="DM Sans,sans-serif">Calle Bogotá</text>`;
+  hSt.forEach(s=>{svg+=`<rect x="26" y="${s.y}" width="708" height="18" fill="#D4C9B8"/><text x="380" y="${s.y+12}" font-size="8" fill="#8A7060" text-anchor="middle" font-family="DM Sans,sans-serif">${s.l}</text>`;});
+  mzRows.forEach(mz=>{
+    const xS=mz.s==='l'?28:380,xE=mz.s==='l'?350:732,mzW=xE-xS,mzH=mz.yE-mz.yS,cols=15,rows=Math.max(2,Math.floor(mzH/22)),lw=(mzW-8)/cols,lh=(mzH-8)/rows;
+    svg+=`<text x="${xS+mzW/2}" y="${mz.yS+mzH/2+5}" font-size="14" fill="#C4703A44" text-anchor="middle" font-family="Playfair Display,serif" font-weight="700">${mz.id}</text>`;
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      const lid=`${mz.id}-${r*cols+c+1}`,lx=(xS+4+c*lw).toFixed(1),ly=(mz.yS+4+r*lh).toFixed(1),w=(lw-1).toFixed(1),h=(lh-1).toFixed(1),n=r*cols+c+1;
+      let cls='lote';
+      if(sold.includes(lid))cls+=' vendido';else if(resv.includes(lid))cls+=' reservado';else if(inSale.includes(lid))cls+=' en-venta';
+      const st=cls.includes('vendido')?'Vendido':cls.includes('reservado')?'Reservado':cls.includes('en-venta')?'En venta':'Disponible';
+      svg+=`<rect class="${cls}" x="${lx}" y="${ly}" width="${w}" height="${h}" rx="1.5" onmouseover="tt(event,'${mz.id}','${n}','${st}')" onmouseout="th()" onclick="showToast('🏞️ Mzna. ${mz.id} · Lote ${n} · ${st}')"/>`;
+      if(lw>16)svg+=`<text x="${(parseFloat(lx)+parseFloat(w)/2).toFixed(1)}" y="${(parseFloat(ly)+parseFloat(h)/2+2).toFixed(1)}" font-size="6" fill="#3D2B1A" text-anchor="middle" pointer-events="none">${n}</text>`;
+    }
+  });
+  svg+=`</svg>`;
+  document.getElementById('map-inner').innerHTML=svg;
+}
+function tt(e,mz,n,st){const t=document.getElementById('map-tt'),r=document.getElementById('map-view').getBoundingClientRect();t.innerHTML=`<strong style="color:#E8A97A">Mzna. ${mz} · Lote ${n}</strong><div>${st}</div>`;t.style.cssText=`left:${e.clientX-r.left+10}px;top:${e.clientY-r.top+10}px;opacity:1`;}
+function th(){document.getElementById('map-tt').style.opacity='0';}
+
+// ── INIT ──
+loadHome();
+</script>
+</body>
+</html>
