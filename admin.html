@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin · Mi Tierra Sur</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#0D0F12; --surface:#161920; --surface2:#1E2330; --surface3:#252B3A;
+  --border:#2A3050; --border2:#353D58;
+  --tierra:#C4703A; --tierra-l:#E8A97A; --tierra-d:#9A5228;
+  --verde:#3A8F5F; --verde-l:#5AB87E;
+  --rojo:#C43A3A; --rojo-l:#E87A7A;
+  --azul:#3A6FC4; --azul-l:#7AA8E8;
+  --amarillo:#C4A83A; --amarillo-l:#E8D07A;
+  --text:#E8EAF0; --text2:#9BA3C0; --text3:#5A6080;
+  --accent:var(--tierra);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;
+  background:radial-gradient(ellipse at 30% 50%, #1a0f08 0%, var(--bg) 60%);
+}
+.login-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:48px;width:100%;max-width:400px;
+  box-shadow:0 40px 80px rgba(0,0,0,.6);
+}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .icon{width:64px;height:64px;background:var(--tierra);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:12px}
+.login-logo h1{font-family:'Syne',sans-serif;font-size:22px;color:var(--tierra-l)}
+.login-logo p{font-size:13px;color:var(--text2);margin-top:4px}
+.login-card .fg{margin-bottom:16px}
+.login-card label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.login-card input{width:100%;padding:12px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;transition:.2s}
+.login-card input:focus{outline:none;border-color:var(--tierra);background:var(--surface3)}
+.login-btn{width:100%;padding:13px;background:var(--tierra);color:#fff;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:.25s;margin-top:8px}
+.login-btn:hover{background:var(--tierra-l);transform:translateY(-1px)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.login-err{background:rgba(196,58,58,.15);border:1px solid var(--rojo);color:var(--rojo-l);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none}
+
+/* ── LAYOUT ── */
+#app{display:none;height:100vh;overflow:hidden}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--surface);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50;
+}
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sb-logo strong{font-family:'Syne',sans-serif;font-size:16px;color:var(--tierra-l);display:block}
+.sb-logo span{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.sb-section{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:12px 10px 6px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;cursor:pointer;transition:.18s;font-size:14px;font-weight:500;color:var(--text2);margin-bottom:2px}
+.sb-item:hover{background:var(--surface2);color:var(--text)}
+.sb-item.active{background:var(--tierra);color:#fff}
+.sb-item .ico{font-size:17px;width:22px;text-align:center}
+.sb-item .badge{margin-left:auto;background:var(--rojo);color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700}
+.sb-bottom{padding:14px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sb-avatar{width:36px;height:36px;background:var(--tierra);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sb-user-info strong{font-size:13px;display:block;color:var(--text)}
+.sb-user-info span{font-size:11px;color:var(--text2)}
+.sb-logout{width:100%;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:.2s}
+.sb-logout:hover{background:var(--rojo);color:#fff;border-color:var(--rojo)}
+
+/* ── MAIN ── */
+.main{margin-left:240px;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar h2{font-family:'Syne',sans-serif;font-size:18px;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.tb-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.2s}
+.tb-btn-pri{background:var(--tierra);color:#fff}.tb-btn-pri:hover{background:var(--tierra-l)}
+.tb-btn-sec{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}.tb-btn-sec:hover{background:var(--surface3);color:var(--text)}
+.content{flex:1;padding:28px;overflow-y:auto}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;transition:.2s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-card .label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.stat-card .value{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--text)}
+.stat-card .sub{font-size:12px;color:var(--text3);margin-top:4px}
+.stat-card.c-tierra{border-left:3px solid var(--tierra)}
+.stat-card.c-verde{border-left:3px solid var(--verde)}
+.stat-card.c-azul{border-left:3px solid var(--azul)}
+.stat-card.c-amarillo{border-left:3px solid var(--amarillo)}
+
+/* ── TABLES ── */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.table-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.table-head h3{font-family:'Syne',sans-serif;font-size:15px;color:var(--text)}
+.search-box{padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;min-width:200px}
+.search-box:focus{outline:none;border-color:var(--tierra)}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 16px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border)}
+td{padding:12px 16px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2);color:var(--text)}
+.pill-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.ps-green{background:rgba(58,143,95,.2);color:var(--verde-l)}
+.ps-red{background:rgba(196,58,58,.2);color:var(--rojo-l)}
+.ps-yellow{background:rgba(196,168,58,.2);color:var(--amarillo-l)}
+.ps-blue{background:rgba(58,111,196,.2);color:var(--azul-l)}
+.row-actions{display:flex;gap:6px}
+.btn-icon{width:30px;height:30px;border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.15s}
+.bi-green{background:rgba(58,143,95,.15);color:var(--verde-l)}.bi-green:hover{background:var(--verde)}
+.bi-red{background:rgba(196,58,58,.15);color:var(--rojo-l)}.bi-red:hover{background:var(--rojo)}
+.bi-blue{background:rgba(58,111,196,.15);color:var(--azul-l)}.bi-blue:hover{background:var(--azul)}
+.bi-yellow{background:rgba(196,168,58,.15);color:var(--amarillo-l)}.bi-yellow:hover{background:var(--amarillo)}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border);font-size:13px;color:var(--text2)}
+.pg-btns{display:flex;gap:6px}
+.pg-btn{padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text2);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:.15s}
+.pg-btn:hover:not(:disabled){background:var(--tierra);color:#fff;border-color:var(--tierra)}
+.pg-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* ── SECTION PANELS ── */
+.panel{display:none}.panel.active{display:block}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:.3s}
+.overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:32px;transform:translateY(20px);transition:.3s;box-shadow:0 40px 80px rgba(0,0,0,.5)}
+.overlay.show .modal{transform:translateY(0)}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.modal-hd h2{font-family:'Syne',sans-serif;font-size:20px;color:var(--tierra-l)}
+.modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px 8px;transition:.2s}.modal-close:hover{color:var(--text)}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;transition:.2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--tierra);background:var(--surface3)}
+.fg select option{background:var(--surface2)}
+.mf{display:flex;gap:10px;margin-top:20px}
+.btn-f{flex:1;padding:11px;border-radius:10px;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;transition:.2s}
+.btn-pri{background:var(--tierra);color:#fff}.btn-pri:hover{background:var(--tierra-l)}
+.btn-can{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}.btn-can:hover{background:var(--surface3)}
+
+/* ── CONFIRM MODAL ── */
+.confirm-modal{max-width:380px;text-align:center}
+.confirm-modal .ico{font-size:48px;margin-bottom:16px}
+.confirm-modal h2{font-size:20px;margin-bottom:8px}
+.confirm-modal p{font-size:14px;color:var(--text2);margin-bottom:20px}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:40px;color:var(--text2)}
+.spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--tierra);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;border-radius:12px;font-size:14px;transform:translateY(80px);opacity:0;transition:.3s;z-index:500;max-width:340px;box-shadow:0 8px 24px rgba(0,0,0,.4);font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--verde);color:#fff}
+.toast.error{background:var(--rojo);color:#fff}
+.toast.info{background:var(--azul);color:#fff}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:48px;color:var(--text3)}
+.empty .ico{font-size:40px;margin-bottom:12px}
+
+/* ── CONSULTAS ── */
+.consulta-msg{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.consulta-unread td{color:var(--text)!important;font-weight:500}
+
+/* ── DASHBOARD ACTIVITY ── */
+.activity-list{display:flex;flex-direction:column;gap:0}
+.activity-item{display:flex;gap:14px;align-items:flex-start;padding:14px 20px;border-bottom:1px solid var(--border);transition:.15s}
+.activity-item:last-child{border-bottom:none}
+.activity-item:hover{background:var(--surface2)}
+.activity-dot{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.activity-info strong{font-size:13px;display:block;color:var(--text);margin-bottom:2px}
+.activity-info span{font-size:12px;color:var(--text3)}
+
+/* ── GRID DASHBOARD ── */
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+@media(max-width:1100px){.dash-grid{grid-template-columns:1fr}}
+
+/* ── TOGGLE ── */
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:24px;cursor:pointer;transition:.25s}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;left:3px;top:3px;transition:.25s}
+.toggle input:checked+.toggle-slider{background:var(--verde)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(20px)}
+
+/* ── MOBILE ── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:.3s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon">🏡</div>
+      <h1>Mi Tierra Sur</h1>
+      <p>Panel de Administración</p>
+    </div>
+    <div class="fg">
+      <label>Email de administrador</label>
+      <input id="l-email" type="email" placeholder="admin@miterrasur.com.ar" autocomplete="email">
+    </div>
+    <div class="fg">
+      <label>Contraseña</label>
+      <input id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Ingresar al panel</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     APP
+════════════════════════════════════════ -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <strong>Mi Tierra Sur</strong>
+      <span>Admin Panel</span>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section">General</div>
+      <div class="sb-item active" onclick="showPanel('dashboard',this)"><span class="ico">📊</span> Dashboard</div>
+      <div class="sb-item" onclick="showPanel('consultas',this)"><span class="ico">📨</span> Consultas <span class="badge" id="badge-consultas" style="display:none">0</span></div>
+
+      <div class="sb-section">Contenido</div>
+      <div class="sb-item" onclick="showPanel('noticias',this)"><span class="ico">📰</span> Noticias</div>
+      <div class="sb-item" onclick="showPanel('servicios',this)"><span class="ico">🔧</span> Servicios</div>
+      <div class="sb-item" onclick="showPanel('lotes',this)"><span class="ico">🏞️</span> Lotes</div>
+      <div class="sb-item" onclick="showPanel('publicidades',this)"><span class="ico">📢</span> Publicidades</div>
+
+      <div class="sb-section">Usuarios</div>
+      <div class="sb-item" onclick="showPanel('vecinos',this)"><span class="ico">👥</span> Vecinos</div>
+
+      <div class="sb-section">Sistema</div>
+      <div class="sb-item" onclick="window.open('index.html','_blank')"><span class="ico">🌐</span> Ver sitio público</div>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-user">
+        <div class="sb-avatar">👤</div>
+        <div class="sb-user-info">
+          <strong id="admin-name">Admin</strong>
+          <span id="admin-email">–</span>
+        </div>
+      </div>
+      <button class="sb-logout" onclick="doLogout()">🚪 Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="page-title">Dashboard</h2>
+      <div class="topbar-right">
+        <span style="font-size:12px;color:var(--text3)" id="last-update"></span>
+        <button class="tb-btn tb-btn-pri" id="btn-add" style="display:none" onclick="openAdd()">+ Agregar</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="stats-row" id="stats-row">
+          <div class="stat-card c-tierra"><div class="label">Consultas nuevas</div><div class="value" id="ds-consultas">–</div><div class="sub">sin leer</div></div>
+          <div class="stat-card c-verde"><div class="label">Servicios activos</div><div class="value" id="ds-srv">–</div><div class="sub">publicados</div></div>
+          <div class="stat-card c-azul"><div class="label">Lotes disponibles</div><div class="value" id="ds-lotes">–</div><div class="sub">en venta</div></div>
+          <div class="stat-card c-amarillo"><div class="label">Vecinos registrados</div><div class="value" id="ds-vecinos">–</div><div class="sub">total</div></div>
+        </div>
+        <div class="dash-grid">
+          <div class="table-wrap">
+            <div class="table-head"><h3>📨 Últimas consultas</h3><button class="tb-btn tb-btn-sec" onclick="showPanel('consultas',null)">Ver todas</button></div>
+            <div id="dash-consultas"><div class="loading"><div class="spinner"></div></div></div>
+          </div>
+          <div class="table-wrap">
+            <div class="table-head"><h3>⚡ Actividad reciente</h3></div>
+            <div class="activity-list" id="dash-activity">
+              <div class="loading"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CONSULTAS ── -->
+      <div class="panel" id="panel-consultas">
+        <div class="table-wrap">
+          <div class="table-head">
+            <h3>Todas las consultas</h3>
+            <div style="display:flex;gap:8px">
+              <select class="search-box" id="filter-consultas" onchange="loadConsultas()" style="min-width:140px">
+                <option value="">Todas</option>
+                <option value="lote">Lotes</option>
+                <option value="servicio">Servicios</option>
+                <option value="publicidad">Publicidades</option>
+                <option value="aviso">Avisos</option>
+              </select>
+              <select class="search-box" id="filter-leido" onchange="loadConsultas()" style="min-width:130px">
+                <option value="">Todas</option>
+                <option value="false">Sin leer</option>
+                <option value="true">Leídas</option>
+              </select>
+            </div>
+          </div>
+          <div id="tbl-consultas"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- ── NOTICIAS ── -->
+      <div class="panel" id="panel-noticias">
+        <div class="table-wrap">
+          <div class="table-head">
+            <h3>Noticias del barrio</h3>
+            <input class="search-box" placeholder="Buscar noticia…" oninput="filterTable('tbl-noticias',this.value)">
+          </div>
+          <div id="tbl-noticias"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- ── SERVICIOS ── -->
+      <div class="panel" id="panel-servicios">
+        <div class="table-wrap">
+          <div class="table-head">
+            <h3>Servicios del barrio</h3>
+            <input class="search-box" placeholder="Buscar servicio…" oninput="filterTable('tbl-servicios',this.value)">
+          </div>
+          <div id="tbl-servicios"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- ── LOTES ── -->
+      <div class="panel" id="panel-lotes">
+        <div class="table-wrap">
+          <div class="table-head">
+            <h3>Lotes registrados</h3>
+            <input class="search-box" placeholder="Buscar lote…" oninput="filterTable('tbl-lotes',this.value)">
+          </div>
+          <div id="tbl-lotes"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- ── PUBLICIDADES ── -->
+      <div class="panel" id="panel-publicidades">
+        <div class="table-wrap">
+          <div class="table-head"><h3>Banners publicitarios</h3></div>
+          <div id="tbl-publicidades"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+      <!-- ── VECINOS ── -->
+      <div class="panel" id="panel-vecinos">
+        <div class="table-wrap">
+          <div class="table-head">
+            <h3>Vecinos registrados</h3>
+            <input class="search-box" placeholder="Buscar vecino…" oninput="filterTable('tbl-vecinos',this.value)">
+          </div>
+          <div id="tbl-vecinos"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── MODAL FORM ── -->
+<div class="overlay" id="formModal" onclick="closeOut(event,'formModal')">
+  <div class="modal" id="form-modal-inner">
+    <div class="modal-hd">
+      <h2 id="form-title">Agregar</h2>
+      <button class="modal-close" onclick="closeModal('formModal')">✕</button>
+    </div>
+    <div id="form-body"></div>
+  </div>
+</div>
+
+<!-- ── MODAL CONFIRM ── -->
+<div class="overlay" id="confirmModal" onclick="closeOut(event,'confirmModal')">
+  <div class="modal confirm-modal">
+    <div class="ico" id="confirm-ico">⚠️</div>
+    <h2 id="confirm-title">¿Confirmar acción?</h2>
+    <p id="confirm-msg">Esta acción no se puede deshacer.</p>
+    <div class="mf">
+      <button class="btn-f btn-pri" id="confirm-ok" style="background:var(--rojo)">Confirmar</button>
+      <button class="btn-f btn-can" onclick="closeModal('confirmModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════════════════════
+//  SUPABASE CONFIG ← reemplazá con tus datos reales
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
+const SUPABASE_KEY = 'TU_ANON_PUBLIC_KEY';
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false
+  }
+});
+
+// ── ESTADO ──
+let currentPanel = 'dashboard';
+let currentUser  = null;
+let panelLoaded  = {};
+
+// ── SANITIZAR INPUT (prevenir XSS) ──
+function san(str){
+  if(!str) return '';
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(String(str)));
+  return div.innerHTML;
+}
+
+// ── FORMATEAR FECHA ──
+function fmtDate(d){
+  if(!d) return '–';
+  return new Date(d).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+// ── TOAST ──
+function toast(msg, type='info'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 4000);
+}
+
+// ═══════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════
+async function doLogin(){
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const err   = document.getElementById('login-err');
+  const btn   = document.getElementById('login-btn');
+  err.style.display = 'none';
+  if(!email || !pass){ showErr('Completá email y contraseña'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Verificando…';
+
+  const {data, error} = await db.auth.signInWithPassword({email, password: pass});
+  if(error){ showErr('Credenciales incorrectas. Verificá email y contraseña.'); btn.disabled=false; btn.textContent='Ingresar al panel'; return; }
+
+  // Verificar que el usuario tenga rol admin
+  const {data: vecino} = await db.from('vecinos').select('rol, nombre').eq('id', data.user.id).single();
+  if(!vecino || vecino.rol !== 'admin'){
+    await db.auth.signOut();
+    showErr('Tu cuenta no tiene permisos de administrador.');
+    btn.disabled=false; btn.textContent='Ingresar al panel';
+    return;
+  }
+
+  currentUser = {...data.user, nombre: vecino.nombre};
+  initApp();
+}
+
+function showErr(msg){
+  const err = document.getElementById('login-err');
+  err.textContent = msg;
+  err.style.display = 'block';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').textContent = 'Ingresar al panel';
+}
+
+async function doLogout(){
+  await db.auth.signOut();
+  currentUser = null;
+  panelLoaded = {};
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('l-pass').value = '';
+}
+
+// Verificar sesión al cargar
+async function checkSession(){
+  const {data:{session}} = await db.auth.getSession();
+  if(session){
+    const {data: vecino} = await db.from('vecinos').select('rol, nombre').eq('id', session.user.id).single();
+    if(vecino?.rol === 'admin'){
+      currentUser = {...session.user, nombre: vecino.nombre};
+      initApp();
+      return;
+    }
+  }
+  // Sin sesión válida → mostrar login
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function initApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('admin-name').textContent = currentUser.nombre || 'Admin';
+  document.getElementById('admin-email').textContent = currentUser.email || '';
+  document.getElementById('last-update').textContent = `Última actualización: ${new Date().toLocaleTimeString('es-AR')}`;
+  loadDashboard();
+}
+
+// ═══════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════
+const panelConfig = {
+  dashboard:    { title:'Dashboard',          addBtn:false },
+  consultas:    { title:'Consultas',          addBtn:false },
+  noticias:     { title:'Noticias',           addBtn:true  },
+  servicios:    { title:'Servicios',          addBtn:true  },
+  lotes:        { title:'Lotes',              addBtn:true  },
+  publicidades: { title:'Publicidades',       addBtn:true  },
+  vecinos:      { title:'Vecinos registrados',addBtn:false },
+};
+
+function showPanel(name, navEl){
+  // Desactivar paneles
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  // Nav
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  if(navEl) navEl.classList.add('active');
+  // Config
+  const cfg = panelConfig[name];
+  document.getElementById('page-title').textContent = cfg.title;
+  document.getElementById('btn-add').style.display = cfg.addBtn ? 'block' : 'none';
+  currentPanel = name;
+  // Cargar si no fue cargado aún
+  if(!panelLoaded[name]){
+    panelLoaded[name] = true;
+    loadPanel(name);
+  }
+}
+
+function loadPanel(name){
+  if(name==='consultas')    loadConsultas();
+  if(name==='noticias')     loadNoticias();
+  if(name==='servicios')    loadServicios();
+  if(name==='lotes')        loadLotes();
+  if(name==='publicidades') loadPublicidades();
+  if(name==='vecinos')      loadVecinos();
+}
+
+// ═══════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════
+async function loadDashboard(){
+  // Stats paralelas
+  const [qC, qS, qL, qV, qU] = await Promise.all([
+    db.from('consultas').select('id',{count:'exact'}).eq('leido',false),
+    db.from('servicios').select('id',{count:'exact'}).eq('activo',true),
+    db.from('lotes').select('id',{count:'exact'}).eq('estado','disponible'),
+    db.from('vecinos').select('id',{count:'exact'}),
+    db.from('consultas').select('id,nombre,tipo,created_at,leido').order('created_at',{ascending:false}).limit(6),
+  ]);
+
+  document.getElementById('ds-consultas').textContent = qC.count ?? '–';
+  document.getElementById('ds-srv').textContent       = qS.count ?? '–';
+  document.getElementById('ds-lotes').textContent     = qL.count ?? '–';
+  document.getElementById('ds-vecinos').textContent   = qV.count ?? '–';
+
+  const unread = qC.count || 0;
+  const badge = document.getElementById('badge-consultas');
+  if(unread > 0){ badge.style.display='inline'; badge.textContent=unread; }
+
+  // Últimas consultas
+  if(qU.data?.length){
+    let html = `<table><thead><tr><th>Nombre</th><th>Tipo</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>`;
+    qU.data.forEach(c=>{
+      html+=`<tr class="${c.leido?'':'consulta-unread'}">
+        <td>${san(c.nombre)}</td>
+        <td>${san(c.tipo||'general')}</td>
+        <td>${fmtDate(c.created_at)}</td>
+        <td><span class="pill-status ${c.leido?'ps-blue':'ps-yellow'}">${c.leido?'Leída':'Nueva'}</span></td>
+      </tr>`;
+    });
+    html+=`</tbody></table>`;
+    document.getElementById('dash-consultas').innerHTML = html;
+  } else {
+    document.getElementById('dash-consultas').innerHTML = '<div class="empty"><div class="ico">📭</div>Sin consultas aún</div>';
+  }
+
+  // Actividad reciente
+  const acts = [
+    {ico:'🏗️',bg:'rgba(196,112,58,.2)',title:'Obras Calle Jauretche',sub:'Noticia publicada hace 2 días'},
+    {ico:'🔧',bg:'rgba(58,143,95,.2)',title:'Plomería Rodríguez',sub:'Servicio verificado hace 3 días'},
+    {ico:'🏞️',bg:'rgba(58,111,196,.2)',title:'Lote 5 Mzna. BK',sub:'Consulta recibida hace 4 días'},
+    {ico:'👤',bg:'rgba(196,168,58,.2)',title:'Nuevo vecino registrado',sub:'Hace 5 días'},
+  ];
+  document.getElementById('dash-activity').innerHTML = acts.map(a=>`
+    <div class="activity-item">
+      <div class="activity-dot" style="background:${a.bg}">${a.ico}</div>
+      <div class="activity-info"><strong>${san(a.title)}</strong><span>${san(a.sub)}</span></div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════
+//  CONSULTAS
+// ═══════════════════════════════════
+async function loadConsultas(){
+  document.getElementById('tbl-consultas').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const tipo  = document.getElementById('filter-consultas')?.value;
+  const leido = document.getElementById('filter-leido')?.value;
+
+  let q = db.from('consultas').select('*').order('created_at',{ascending:false}).limit(100);
+  if(tipo)  q = q.eq('tipo',tipo);
+  if(leido!=='') q = q.eq('leido', leido==='true');
+
+  const {data,error} = await q;
+  if(error||!data?.length){
+    document.getElementById('tbl-consultas').innerHTML='<div class="empty"><div class="ico">📭</div>Sin consultas</div>';
+    return;
+  }
+  let html=`<table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Tipo</th><th>Mensaje</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
+  data.forEach(c=>{
+    html+=`<tr class="${c.leido?'':'consulta-unread'}">
+      <td>${san(c.nombre)}</td>
+      <td>${san(c.telefono||'–')}</td>
+      <td><span class="pill-status ps-blue">${san(c.tipo||'general')}</span></td>
+      <td class="consulta-msg" title="${san(c.mensaje)}">${san(c.mensaje||'–')}</td>
+      <td>${fmtDate(c.created_at)}</td>
+      <td><span class="pill-status ${c.leido?'ps-blue':'ps-yellow'}">${c.leido?'Leída':'Nueva'}</span></td>
+      <td><div class="row-actions">
+        ${!c.leido?`<button class="btn-icon bi-green" title="Marcar leída" onclick="marcarLeida('${c.id}')">✓</button>`:''}
+        <button class="btn-icon bi-red" title="Eliminar" onclick="eliminar('consultas','${c.id}','esta consulta')">🗑</button>
+      </div></td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('tbl-consultas').innerHTML=html;
+}
+
+async function marcarLeida(id){
+  const {error} = await db.from('consultas').update({leido:true}).eq('id',id);
+  if(error){toast('Error al actualizar','error');return;}
+  panelLoaded['consultas']=false;
+  loadConsultas();
+  toast('Consulta marcada como leída','ok');
+}
+
+// ═══════════════════════════════════
+//  NOTICIAS
+// ═══════════════════════════════════
+async function loadNoticias(){
+  document.getElementById('tbl-noticias').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const {data,error}=await db.from('noticias').select('*').order('created_at',{ascending:false});
+  if(error||!data?.length){document.getElementById('tbl-noticias').innerHTML='<div class="empty"><div class="ico">📰</div>Sin noticias</div>';return;}
+  let html=`<table id="t-noticias"><thead><tr><th>Ícono</th><th>Título</th><th>Categoría</th><th>Destacado</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody>`;
+  data.forEach(n=>{
+    html+=`<tr>
+      <td style="font-size:22px">${san(n.icono||'📰')}</td>
+      <td><strong>${san(n.titulo)}</strong></td>
+      <td><span class="pill-status ps-blue">${san(n.categoria||'general')}</span></td>
+      <td>${n.destacado?'⭐':'–'}</td>
+      <td><span class="pill-status ${n.activo?'ps-green':'ps-red'}">${n.activo?'Activo':'Inactivo'}</span></td>
+      <td>${fmtDate(n.created_at)}</td>
+      <td><div class="row-actions">
+        <button class="btn-icon bi-blue" title="Editar" onclick="editNoticia(${JSON.stringify(n).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn-icon ${n.activo?'bi-yellow':'bi-green'}" title="${n.activo?'Desactivar':'Activar'}" onclick="toggleActivo('noticias','${n.id}',${n.activo})">${n.activo?'⏸':'▶'}</button>
+        <button class="btn-icon bi-red" title="Eliminar" onclick="eliminar('noticias','${n.id}','esta noticia')">🗑</button>
+      </div></td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('tbl-noticias').innerHTML=html;
+}
+
+function editNoticia(n){
+  document.getElementById('form-title').textContent='Editar Noticia';
+  document.getElementById('form-body').innerHTML=`
+    <div class="fg"><label>Ícono (emoji)</label><input id="f-icono" value="${san(n.icono||'📰')}"></div>
+    <div class="fg"><label>Título</label><input id="f-titulo" value="${san(n.titulo)}"></div>
+    <div class="fg"><label>Descripción corta</label><textarea id="f-desc" rows="2">${san(n.descripcion||'')}</textarea></div>
+    <div class="fg"><label>Contenido completo</label><textarea id="f-contenido" rows="4">${san(n.contenido||'')}</textarea></div>
+    <div class="fg"><label>Categoría</label>
+      <select id="f-cat">
+        ${['general','obras','servicios','comunidad','seguridad','reuniones'].map(c=>`<option value="${c}" ${n.categoria===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+      <label class="toggle"><input type="checkbox" id="f-dest" ${n.destacado?'checked':''}><span class="toggle-slider"></span></label>
+      <span style="font-size:13px;color:var(--text2)">Noticia destacada</span>
+    </div>
+    <div class="mf">
+      <button class="btn-f btn-pri" onclick="saveNoticia('${n.id}')">Guardar cambios</button>
+      <button class="btn-f btn-can" onclick="closeModal('formModal')">Cancelar</button>
+    </div>`;
+  openModal('formModal');
+}
+
+async function saveNoticia(id){
+  const payload={
+    icono:   sanitizeInput(document.getElementById('f-icono').value),
+    titulo:  sanitizeInput(document.getElementById('f-titulo').value),
+    descripcion: sanitizeInput(document.getElementById('f-desc').value),
+    contenido:   sanitizeInput(document.getElementById('f-contenido').value),
+    categoria:   sanitizeInput(document.getElementById('f-cat').value),
+    destacado:   document.getElementById('f-dest').checked,
+  };
+  if(!payload.titulo){toast('El título es requerido','error');return;}
+  const {error} = id
+    ? await db.from('noticias').update(payload).eq('id',id)
+    : await db.from('noticias').insert(payload);
+  if(error){toast('Error al guardar: '+error.message,'error');return;}
+  closeModal('formModal');
+  panelLoaded['noticias']=false;
+  loadNoticias();
+  toast(id?'Noticia actualizada':'Noticia creada','ok');
+}
+
+// ═══════════════════════════════════
+//  SERVICIOS
+// ═══════════════════════════════════
+async function loadServicios(){
+  document.getElementById('tbl-servicios').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const {data,error}=await db.from('servicios').select('*').order('created_at',{ascending:false});
+  if(error||!data?.length){document.getElementById('tbl-servicios').innerHTML='<div class="empty"><div class="ico">🔧</div>Sin servicios</div>';return;}
+  let html=`<table id="t-servicios"><thead><tr><th>Ícono</th><th>Nombre</th><th>Categoría</th><th>Teléfono</th><th>Vecino</th><th>Verificado</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
+  data.forEach(s=>{
+    html+=`<tr>
+      <td style="font-size:22px">${san(s.icono||'🔧')}</td>
+      <td><strong>${san(s.nombre)}</strong><br><small style="color:var(--text3)">${san(s.descripcion||'')}</small></td>
+      <td><span class="pill-status ps-blue">${san(s.categoria||'hogar')}</span></td>
+      <td>${san(s.telefono||'–')}</td>
+      <td>${s.es_vecino?'<span class="pill-status ps-green">Vecino</span>':'<span class="pill-status ps-blue">Externo</span>'}</td>
+      <td>${s.verificado?'<span class="pill-status ps-green">✓ Sí</span>':'<span class="pill-status ps-yellow">No</span>'}</td>
+      <td><span class="pill-status ${s.activo?'ps-green':'ps-red'}">${s.activo?'Activo':'Inactivo'}</span></td>
+      <td><div class="row-actions">
+        <button class="btn-icon bi-blue" onclick="editServicio(${JSON.stringify(s).replace(/"/g,'&quot;')})">✏️</button>
+        ${!s.verificado?`<button class="btn-icon bi-green" title="Verificar" onclick="verificarSrv('${s.id}')">✓</button>`:''}
+        <button class="btn-icon ${s.activo?'bi-yellow':'bi-green'}" onclick="toggleActivo('servicios','${s.id}',${s.activo})">${s.activo?'⏸':'▶'}</button>
+        <button class="btn-icon bi-red" onclick="eliminar('servicios','${s.id}','este servicio')">🗑</button>
+      </div></td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('tbl-servicios').innerHTML=html;
+}
+
+function editServicio(s){
+  document.getElementById('form-title').textContent='Editar Servicio';
+  document.getElementById('form-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label>Ícono</label><input id="f-icono" value="${san(s.icono||'🔧')}"></div>
+      <div class="fg"><label>Nombre</label><input id="f-nombre" value="${san(s.nombre)}"></div>
+    </div>
+    <div class="fg"><label>Descripción</label><textarea id="f-desc" rows="2">${san(s.descripcion||'')}</textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label>Teléfono</label><input id="f-tel" value="${san(s.telefono||'')}"></div>
+      <div class="fg"><label>Email</label><input id="f-email" value="${san(s.email||'')}"></div>
+    </div>
+    <div class="fg"><label>Categoría</label>
+      <select id="f-cat">
+        ${['hogar','salud','educacion','comercio','transporte'].map(c=>`<option value="${c}" ${s.categoria===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div style="display:flex;gap:20px;margin-top:4px">
+      <div style="display:flex;align-items:center;gap:8px"><label class="toggle"><input type="checkbox" id="f-vecino" ${s.es_vecino?'checked':''}><span class="toggle-slider"></span></label><span style="font-size:13px;color:var(--text2)">Es vecino</span></div>
+      <div style="display:flex;align-items:center;gap:8px"><label class="toggle"><input type="checkbox" id="f-verif" ${s.verificado?'checked':''}><span class="toggle-slider"></span></label><span style="font-size:13px;color:var(--text2)">Verificado</span></div>
+    </div>
+    <div class="mf">
+      <button class="btn-f btn-pri" onclick="saveServicio('${s.id}')">Guardar</button>
+      <button class="btn-f btn-can" onclick="closeModal('formModal')">Cancelar</button>
+    </div>`;
+  openModal('formModal');
+}
+
+async function saveServicio(id){
+  const payload={
+    icono:       sanitizeInput(document.getElementById('f-icono').value),
+    nombre:      sanitizeInput(document.getElementById('f-nombre').value),
+    descripcion: sanitizeInput(document.getElementById('f-desc').value),
+    telefono:    sanitizeInput(document.getElementById('f-tel').value),
+    email:       sanitizeInput(document.getElementById('f-email')?.value||''),
+    categoria:   sanitizeInput(document.getElementById('f-cat').value),
+    es_vecino:   document.getElementById('f-vecino').checked,
+    verificado:  document.getElementById('f-verif').checked,
+  };
+  if(!payload.nombre){toast('El nombre es requerido','error');return;}
+  const {error} = id
+    ? await db.from('servicios').update(payload).eq('id',id)
+    : await db.from('servicios').insert(payload);
+  if(error){toast('Error: '+error.message,'error');return;}
+  closeModal('formModal');
+  panelLoaded['servicios']=false;
+  loadServicios();
+  toast(id?'Servicio actualizado':'Servicio creado','ok');
+}
+
+async function verificarSrv(id){
+  const {error}=await db.from('servicios').update({verificado:true}).eq('id',id);
+  if(error){toast('Error','error');return;}
+  panelLoaded['servicios']=false;
+  loadServicios();
+  toast('Servicio verificado ✓','ok');
+}
+
+// ═══════════════════════════════════
+//  LOTES
+// ═══════════════════════════════════
+async function loadLotes(){
+  document.getElementById('tbl-lotes').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const {data,error}=await db.from('lotes').select('*').order('created_at',{ascending:false});
+  if(error||!data?.length){document.getElementById('tbl-lotes').innerHTML='<div class="empty"><div class="ico">🏞️</div>Sin lotes</div>';return;}
+  let html=`<table id="t-lotes"><thead><tr><th>Manzana</th><th>Lote</th><th>Superficie</th><th>Precio USD</th><th>Estado</th><th>Financiación</th><th>Acciones</th></tr></thead><tbody>`;
+  data.forEach(l=>{
+    const stCls=l.estado==='disponible'?'ps-green':l.estado==='reservado'?'ps-yellow':'ps-red';
+    html+=`<tr>
+      <td><strong>Mzna. ${san(l.manzana)}</strong></td>
+      <td>Lote ${san(l.numero)}</td>
+      <td>${san(l.superficie)} m²</td>
+      <td><strong>USD ${Number(l.precio_usd).toLocaleString('es-AR')}</strong></td>
+      <td><span class="pill-status ${stCls}">${san(l.estado)}</span></td>
+      <td>${l.financiacion?'<span class="pill-status ps-blue">💳 Sí</span>':'–'}</td>
+      <td><div class="row-actions">
+        <button class="btn-icon bi-blue" onclick="editLote(${JSON.stringify(l).replace(/"/g,'&quot;')})">✏️</button>
+        <button class="btn-icon bi-red" onclick="eliminar('lotes','${l.id}','este lote')">🗑</button>
+      </div></td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('tbl-lotes').innerHTML=html;
+}
+
+function editLote(l){
+  document.getElementById('form-title').textContent='Editar Lote';
+  document.getElementById('form-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label>Manzana</label><input id="f-mz" value="${san(l.manzana)}"></div>
+      <div class="fg"><label>Número de lote</label><input id="f-num" value="${san(l.numero)}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label>Superficie (m²)</label><input id="f-sup" type="number" value="${san(l.superficie)}"></div>
+      <div class="fg"><label>Precio USD</label><input id="f-precio" type="number" value="${san(l.precio_usd)}"></div>
+    </div>
+    <div class="fg"><label>Estado</label>
+      <select id="f-estado">
+        ${['disponible','reservado','vendido'].map(e=>`<option value="${e}" ${l.estado===e?'selected':''}>${e}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label>Teléfono de contacto</label><input id="f-tel" value="${san(l.contacto_tel||'')}"></div>
+    <div class="fg"><label>Descripción</label><textarea id="f-desc" rows="2">${san(l.descripcion||'')}</textarea></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+      <label class="toggle"><input type="checkbox" id="f-fin" ${l.financiacion?'checked':''}><span class="toggle-slider"></span></label>
+      <span style="font-size:13px;color:var(--text2)">Tiene financiación</span>
+    </div>
+    <div class="mf">
+      <button class="btn-f btn-pri" onclick="saveLote('${l.id}')">Guardar</button>
+      <button class="btn-f btn-can" onclick="closeModal('formModal')">Cancelar</button>
+    </div>`;
+  openModal('formModal');
+}
+
+async function saveLote(id){
+  const payload={
+    manzana:     sanitizeInput(document.getElementById('f-mz').value),
+    numero:      sanitizeInput(document.getElementById('f-num').value),
+    superficie:  parseFloat(document.getElementById('f-sup').value)||0,
+    precio_usd:  parseFloat(document.getElementById('f-precio').value)||0,
+    estado:      sanitizeInput(document.getElementById('f-estado').value),
+    contacto_tel:sanitizeInput(document.getElementById('f-tel').value),
+    descripcion: sanitizeInput(document.getElementById('f-desc').value),
+    financiacion:document.getElementById('f-fin').checked,
+  };
+  if(!payload.manzana||!payload.numero){toast('Manzana y número son requeridos','error');return;}
+  const {error} = id
+    ? await db.from('lotes').update(payload).eq('id',id)
+    : await db.from('lotes').insert(payload);
+  if(error){toast('Error: '+error.message,'error');return;}
+  closeModal('formModal');
+  panelLoaded['lotes']=false;
+  loadLotes();
+  toast(id?'Lote actualizado':'Lote creado','ok');
+}
+
+// ═══════════════════════════════════
+//  PUBLICIDADES
+// ═══════════════════════════════════
+async function loadPublicidades(){
+  document.getElementById('tbl-publicidades').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const {data,error}=await db.from('publicidades').select('*').order('created_at',{ascending:false});
+  if(error||!data?.length){document.getElementById('tbl-publicidades').innerHTML='<div class="empty"><div class="ico">📢</div>Sin publicidades activas</div>';return;}
+  let html=`<table><thead><tr><th>Título</th><th>Tipo</th><th>Descripción</th><th>Teléfono</th><th>Vigencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
+  data.forEach(p=>{
+    html+=`<tr>
+      <td><strong>${san(p.titulo)}</strong></td>
+      <td><span class="pill-status ps-blue">${san(p.tipo||'banner')}</span></td>
+      <td class="consulta-msg">${san(p.descripcion||'–')}</td>
+      <td>${san(p.telefono||'–')}</td>
+      <td style="font-size:12px">${p.fecha_inicio?san(p.fecha_inicio):'–'} → ${p.fecha_fin?san(p.fecha_fin):'–'}</td>
+      <td><span class="pill-status ${p.activo?'ps-green':'ps-red'}">${p.activo?'Activa':'Inactiva'}</span></td>
+      <td><div class="row-actions">
+        <button class="btn-icon ${p.activo?'bi-yellow':'bi-green'}" onclick="toggleActivo('publicidades','${p.id}',${p.activo})">${p.activo?'⏸':'▶'}</button>
+        <button class="btn-icon bi-red" onclick="eliminar('publicidades','${p.id}','esta publicidad')">🗑</button>
+      </div></td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('tbl-publicidades').innerHTML=html;
+}
+
+// ═══════════════════════════════════
+//  VECINOS
+// ═══════════════════════════════════
+async function loadVecinos(){
+  document.getElementById('tbl-vecinos').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const {data,error}=await db.from('vecinos').select('*').order('created_at',{ascending:false});
+  if(error||!data?.length){document.getElementById('tbl-vecinos').innerHTML='<div class="empty"><div class="ico">👥</div>Sin vecinos registrados</div>';return;}
+  let html=`<table id="t-vecinos"><thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Manzana/Lote</th><th>Rol</th><th>Estado</th><th>Registro</th><th>Acciones</th></tr></thead><tbody>`;
+  data.forEach(v=>{
+    html+=`<tr>
+      <td><strong>${san(v.nombre||'–')}</strong></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px">${san(v.email||'–')}</td>
+      <td>${san(v.telefono||'–')}</td>
+      <td>${v.manzana?`Mzna. ${san(v.manzana)}${v.lote?' · Lote '+san(v.lote):''}`:'-'}</td>
+      <td><span class="pill-status ${v.rol==='admin'?'ps-red':'ps-blue'}">${san(v.rol||'vecino')}</span></td>
+      <td><span class="pill-status ${v.activo?'ps-green':'ps-red'}">${v.activo?'Activo':'Inactivo'}</span></td>
+      <td style="font-size:12px">${fmtDate(v.created_at)}</td>
+      <td><div class="row-actions">
+        <button class="btn-icon ${v.activo?'bi-yellow':'bi-green'}" onclick="toggleActivo('vecinos','${v.id}',${v.activo})">${v.activo?'⏸':'▶'}</button>
+        ${v.rol!=='admin'?`<button class="btn-icon bi-red" onclick="eliminar('vecinos','${v.id}','este vecino')">🗑</button>`:''}
+      </div></td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('tbl-vecinos').innerHTML=html;
+}
+
+// ═══════════════════════════════════
+//  ACCIONES GENÉRICAS
+// ═══════════════════════════════════
+async function toggleActivo(tabla, id, estado){
+  const {error}=await db.from(tabla).update({activo:!estado}).eq('id',id);
+  if(error){toast('Error al actualizar','error');return;}
+  panelLoaded[currentPanel]=false;
+  loadPanel(currentPanel);
+  toast(`${estado?'Desactivado':'Activado'} correctamente`,'ok');
+}
+
+function eliminar(tabla, id, label){
+  document.getElementById('confirm-ico').textContent='⚠️';
+  document.getElementById('confirm-title').textContent=`¿Eliminar ${label}?`;
+  document.getElementById('confirm-msg').textContent='Esta acción no se puede deshacer. El registro se eliminará permanentemente.';
+  document.getElementById('confirm-ok').onclick=async()=>{
+    const {error}=await db.from(tabla).delete().eq('id',id);
+    if(error){toast('Error al eliminar: '+error.message,'error');closeModal('confirmModal');return;}
+    closeModal('confirmModal');
+    panelLoaded[currentPanel]=false;
+    loadPanel(currentPanel);
+    toast('Eliminado correctamente','ok');
+  };
+  openModal('confirmModal');
+}
+
+// ═══════════════════════════════════
+//  OPEN ADD
+// ═══════════════════════════════════
+function openAdd(){
+  if(currentPanel==='noticias')    editNoticia({icono:'📰',titulo:'',descripcion:'',contenido:'',categoria:'general',destacado:false});
+  if(currentPanel==='servicios')   editServicio({icono:'🔧',nombre:'',descripcion:'',telefono:'',email:'',categoria:'hogar',es_vecino:true,verificado:false});
+  if(currentPanel==='lotes')       editLote({manzana:'',numero:'',superficie:'',precio_usd:'',estado:'disponible',contacto_tel:'',descripcion:'',financiacion:false});
+  if(currentPanel==='publicidades')openPublicidad();
+}
+
+function openPublicidad(){
+  document.getElementById('form-title').textContent='Nueva Publicidad';
+  document.getElementById('form-body').innerHTML=`
+    <div class="fg"><label>Título / Nombre del negocio</label><input id="f-titulo" placeholder="Ej: Ferretería El Barrio"></div>
+    <div class="fg"><label>Descripción</label><textarea id="f-desc" rows="2" placeholder="Descripción del negocio…"></textarea></div>
+    <div class="fg"><label>Teléfono</label><input id="f-tel" placeholder="11-xxxx-xxxx"></div>
+    <div class="fg"><label>Tipo de banner</label>
+      <select id="f-tipo">
+        <option value="banner_top">Banner superior (leaderboard)</option>
+        <option value="banner_side">Banner lateral</option>
+        <option value="banner_inline">Banner inline</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fg"><label>Fecha inicio</label><input id="f-inicio" type="date"></div>
+      <div class="fg"><label>Fecha fin</label><input id="f-fin" type="date"></div>
+    </div>
+    <div class="mf">
+      <button class="btn-f btn-pri" onclick="savePub()">Crear publicidad</button>
+      <button class="btn-f btn-can" onclick="closeModal('formModal')">Cancelar</button>
+    </div>`;
+  openModal('formModal');
+}
+
+async function savePub(){
+  const payload={
+    titulo:      sanitizeInput(document.getElementById('f-titulo').value),
+    descripcion: sanitizeInput(document.getElementById('f-desc').value),
+    telefono:    sanitizeInput(document.getElementById('f-tel').value),
+    tipo:        sanitizeInput(document.getElementById('f-tipo').value),
+    fecha_inicio:document.getElementById('f-inicio').value||null,
+    fecha_fin:   document.getElementById('f-fin').value||null,
+    activo:      true,
+  };
+  if(!payload.titulo){toast('El título es requerido','error');return;}
+  const {error}=await db.from('publicidades').insert(payload);
+  if(error){toast('Error: '+error.message,'error');return;}
+  closeModal('formModal');
+  panelLoaded['publicidades']=false;
+  loadPublicidades();
+  toast('Publicidad creada','ok');
+}
+
+// ═══════════════════════════════════
+//  FILTRO DE TABLA (cliente)
+// ═══════════════════════════════════
+function filterTable(containerId, q){
+  const rows = document.querySelectorAll(`#${containerId} table tbody tr`);
+  q = q.toLowerCase();
+  rows.forEach(row=>{
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+function closeOut(e,id){if(e.target.id===id)closeModal(id)}
+
+// ═══════════════════════════════════
+//  SANITIZACIÓN INPUT (prevenir XSS / SQL injection)
+// ═══════════════════════════════════
+function sanitizeInput(val){
+  if(!val) return '';
+  // Eliminar caracteres peligrosos
+  return String(val)
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#x27;')
+    .replace(/\//g,'&#x2F;')
+    .replace(/\\/g,'&#x5C;')
+    .trim()
+    .substring(0, 2000); // Limitar longitud
+}
+
+// ═══════════════════════════════════
+//  INIT
+// ═══════════════════════════════════
+checkSession();
+</script>
+</body>
+</html>
