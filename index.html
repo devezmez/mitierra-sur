@@ -93,12 +93,12 @@ nav a.active{background:var(--tierra);color:#fff}
 .map-legend{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
 .leg{display:flex;align-items:center;gap:5px;font-size:12px}
 .leg-dot{width:12px;height:12px;border-radius:3px}
-#map-view{width:100%;height:500px;background:#f0ede5;overflow:auto;position:relative}
-.lote{fill:#E8A97A;stroke:#C4703A;stroke-width:.8;cursor:pointer;transition:.15s}
+#map-view{width:100%;height:760px;background:#f0ede5;overflow:auto;position:relative}
+.lote{cursor:pointer;transition:.15s} svg rect[onmouseover]:hover{filter:brightness(1.15)}
 .lote:hover{fill:#C4703A}
-.lote.vendido{fill:#7AAF8A;stroke:#4A7C59}
-.lote.reservado{fill:#F0EBE0;stroke:#C4703A;stroke-dasharray:2,1}
-.lote.en-venta{fill:#FFD966;stroke:#B8860B}
+
+
+
 /* SIDEBAR */
 .widget{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .widget-hd{background:var(--tierra);color:#fff;padding:10px 14px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
@@ -240,7 +240,7 @@ footer a:hover{color:var(--tierra-l)}.ft-logo strong{font-family:'Playfair Displ
           <div class="widget-hd">📞 Administración</div>
           <div class="widget-body" style="font-size:13px;line-height:2.2">
             <div>📱 <a href="https://wa.me/5491199990000" style="color:var(--tierra);font-weight:600">WhatsApp</a></div>
-            <div>✉️ admin@miterrasur.com.ar</div>
+            <div>✉️ <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="157471787c7b55787c61706767746660673b767a783b7467">[email&#160;protected]</a></div>
             <div>🕐 Lun–Vie 8–18hs</div>
             <button class="btn-sm btn-verde" style="width:100%;margin-top:10px;border-radius:8px" onclick="showToast('📱 Abriendo WhatsApp…')">Escribir por WA</button>
           </div>
@@ -312,10 +312,10 @@ footer a:hover{color:var(--tierra-l)}.ft-logo strong{font-family:'Playfair Displ
       <div class="map-tb">
         <span>🏡 Mi Tierra Sur · Fracción 2</span>
         <div class="map-legend">
-          <div class="leg"><div class="leg-dot" style="background:#E8A97A"></div>Disponible</div>
-          <div class="leg"><div class="leg-dot" style="background:#7AAF8A"></div>Vendido</div>
-          <div class="leg"><div class="leg-dot" style="background:#F0EBE0;border:1px solid #C4703A"></div>Reservado</div>
-          <div class="leg"><div class="leg-dot" style="background:#FFD966"></div>En venta</div>
+          <div class="leg"><div class="leg-dot" style="background:#E8A97A;border:1px solid #C4703A"></div>Sin registrar</div>
+          <div class="leg"><div class="leg-dot" style="background:#7AAF8A;border:1px solid #4A7C59"></div>Registrado</div>
+          <div class="leg"><div class="leg-dot" style="background:#FFD966;border:1px solid #B8860B"></div>En venta 💲</div>
+          <div class="leg"><div class="leg-dot" style="background:#9E9E9E;border:1px solid #616161"></div>Vendido</div>
         </div>
       </div>
       <div id="map-view">
@@ -334,7 +334,7 @@ footer a:hover{color:var(--tierra-l)}.ft-logo strong{font-family:'Playfair Displ
     </div>
     <div><h4>Secciones</h4><a onclick="goTo('noticias')">Noticias</a><a onclick="goTo('servicios')">Servicios</a><a onclick="goTo('lotes')">Lotes</a><a onclick="goTo('mapa')">Mapa</a></div>
     <div><h4>Vecinos</h4><a onclick="openModal('loginModal')">Registrarme</a><a onclick="openModal('loginModal')">Mi cuenta</a><a onclick="openModal('publishModal')">Publicar servicio</a><a onclick="openModal('publishModal')">Vender lote</a></div>
-    <div><h4>Contacto</h4><a href="https://wa.me/5491199990000">WhatsApp Admin</a><a>admin@miterrasur.com.ar</a><a>Política de Privacidad</a><a>Términos de uso</a></div>
+    <div><h4>Contacto</h4><a href="https://wa.me/5491199990000">WhatsApp Admin</a><a><span class="__cf_email__" data-cfemail="5f3e3b3236311f32362b3a2d2d3e2c2a2d713c3032713e2d">[email&#160;protected]</span></a><a>Política de Privacidad</a><a>Términos de uso</a></div>
   </div>
   <div class="ft-bottom">© 2025 Mi Tierra Sur · Todos los derechos reservados · <span style="color:var(--tierra-l)">Portal para vecinos del barrio</span></div>
 </footer>
@@ -399,13 +399,13 @@ footer a:hover{color:var(--tierra-l)}.ft-logo strong{font-family:'Playfair Displ
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ═══════════════════════════════════════════════════
 //  SUPABASE CONFIG  ← reemplazá con tus datos reales
 //  supabase.com > tu proyecto > Settings > API
 // ═══════════════════════════════════════════════════
-const SUPABASE_URL = 'https://mitierra-sur.pages.dev';
-const SUPABASE_KEY = 'sb_publishable_I1FPEktd69zjhEGp41c1vg_RzNB4dMS';
+const SUPABASE_URL = 'https://TU_PROYECTO.supabase.co';
+const SUPABASE_KEY = 'TU_ANON_PUBLIC_KEY';
 
 let db = null, ready = false;
 try {
@@ -583,53 +583,252 @@ async function doContactar(){
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);}
 
 // ── MAPA ──
+// Estado de lotes cargado desde Supabase (o mock).
+// Formato: { 'BG-3': 'registrado', 'BK-5': 'venta', ... }
+// Sin entrada = naranja (sin registrar)
+let lotEstados = {};
+
+async function loadLotEstados(){
+  // Intentamos cargar desde lotes en Supabase
+  if(ready){
+    const{data}=await db.from('lotes').select('manzana,numero,estado');
+    if(data) data.forEach(l=>{
+      // estado 'disponible' con dueño registrado → 'registrado'
+      // estado 'disponible' en venta → 'venta'
+      // estado 'vendido' → 'vendido'
+      if(l.estado==='vendido') lotEstados[`${l.manzana}-${l.numero}`]='vendido';
+      else if(l.estado==='disponible') lotEstados[`${l.manzana}-${l.numero}`]='venta';
+      else if(l.estado==='reservado') lotEstados[`${l.manzana}-${l.numero}`]='registrado';
+    });
+  } else {
+    // Mock: algunos registrados, algunos en venta
+    ['BK-5','BM-12','BN-22','AT-3','AW-8'].forEach(k=>lotEstados[k]='venta');
+    ['BG-3','BG-7','BK-2','BK-9','AR-5','AS-3','AT-9','BR-4'].forEach(k=>lotEstados[k]='registrado');
+    ['BG-1','AN-1','AN-4','BK-1','AR-8'].forEach(k=>lotEstados[k]='vendido');
+  }
+}
+
+function getLoteColor(lid){
+  const st = lotEstados[lid];
+  if(st==='venta')      return {fill:'#FFD966',stroke:'#B8860B',label:'En venta 💲'};
+  if(st==='registrado') return {fill:'#7AAF8A',stroke:'#4A7C59',label:'Registrado'};
+  if(st==='vendido')    return {fill:'#9E9E9E',stroke:'#616161',label:'Vendido'};
+  return                       {fill:'#E8A97A',stroke:'#C4703A',label:'Sin registrar'};
+}
+
+function makeLote(mz, num, x, y, w, h, extra=''){
+  const lid=`${mz}-${num}`;
+  const{fill,stroke,label}=getLoteColor(lid);
+  const cx=(x+w/2).toFixed(1), cy=(y+h/2).toFixed(1);
+  let el=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5"
+    fill="${fill}" stroke="${stroke}" stroke-width=".8" style="cursor:pointer"
+    onmouseover="tt(event,'${mz}','${num}','${label}')" onmouseout="th()"
+    onclick="showToast('🏞️ Mzna. ${mz} · Lote ${num} · ${label}')"/>`;
+  // Número del lote
+  if(w>13) el+=`<text x="${cx}" y="${(y+h/2+2.5).toFixed(1)}" font-size="6.5" fill="#2a1a0a" text-anchor="middle" dominant-baseline="middle" pointer-events="none" font-weight="600">${num}</text>`;
+  // Signo $ flotante para lotes en venta
+  if(lotEstados[lid]==='venta'){
+    el+=`<text x="${(x+w-3).toFixed(1)}" y="${(y+4).toFixed(1)}" font-size="7" fill="#7A5200" text-anchor="middle" pointer-events="none" font-weight="800">$</text>`;
+  }
+  return el;
+}
+
+// Dibuja una manzana rectangular normal: 2 filas, N columnas
+// fila superior: lotes de N→1 (de izq a der), fila inferior: lotes N+1→2N
+function drawManzana(mz, xS, yS, W, H, cols){
+  let out='';
+  const lw=(W-2)/cols, rowH=(H-2)/2;
+  // Label manzana centrado
+  out+=`<text x="${(xS+W/2).toFixed(1)}" y="${(yS+H/2+2).toFixed(1)}" font-size="11" fill="#C4703A33" text-anchor="middle" font-family="Playfair Display,serif" font-weight="700" pointer-events="none">${mz}</text>`;
+  // Fila superior: lotes cols→1 (numerados derecha a izquierda en el plano = 1 a la derecha)
+  for(let c=0;c<cols;c++){
+    const num=cols-c; // lote 1 queda a la derecha
+    out+=makeLote(mz,num,xS+1+c*lw,yS+1,lw-1,rowH-1);
+  }
+  // Fila inferior: lotes cols+1→cols*2 (numerados izquierda a derecha)
+  for(let c=0;c<cols;c++){
+    const num=cols+1+c;
+    out+=makeLote(mz,num,xS+1+c*lw,yS+1+rowH,lw-1,rowH-1);
+  }
+  return out;
+}
+
+// Dibuja BS o AX: 4 filas, cols variables, lotes más grandes
+function drawManzanaBS(mz, xS, yS, W, H){
+  let out='';
+  // BS tiene ~14 cols en filas 1-2 y ~15 en filas 3-4 según plano
+  // Simplificamos: 4 filas, 14 cols
+  const cols=14, rows=4;
+  const lw=(W-2)/cols, lh=(H-2)/rows;
+  out+=`<text x="${(xS+W/2).toFixed(1)}" y="${(yS+H/2+2).toFixed(1)}" font-size="11" fill="#C4703A33" text-anchor="middle" font-family="Playfair Display,serif" font-weight="700" pointer-events="none">${mz}</text>`;
+  // Numeración: fila 0 = lotes cols→1, fila 1 = cols+1→cols*2, etc.
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      let num;
+      if(r%2===0) num = r*cols + (cols-c); // derecha a izquierda
+      else        num = r*cols + c+1;      // izquierda a derecha
+      out+=makeLote(mz,num,xS+1+c*lw,yS+1+r*lh,lw-1,lh-1);
+    }
+  }
+  return out;
+}
+
+// Dibuja fila horizontal de lotes sobre Calle Telechea (arriba del todo)
+function drawTelecheaRow(xS, yS, W, H, cols, side){
+  // side='l' manzana BG lado izquierdo, side='r' = AN lado derecho
+  const mz = side==='l' ? 'TL' : 'TR'; // Telechea Left/Right
+  let out='';
+  const lw=W/cols, lh=H;
+  for(let c=0;c<cols;c++){
+    const num=cols-c;
+    out+=makeLote(mz,num,xS+c*lw,yS,lw-1,lh-1);
+  }
+  return out;
+}
+
+// Dibuja columna vertical de lotes sobre Calle Montevideo (lateral izquierdo)
+function drawMontevideoCols(xS, yS, H, rows, startNum){
+  let out='';
+  const lh=H/rows, lw=20;
+  for(let r=0;r<rows;r++){
+    const num=startNum+r;
+    out+=makeLote('MV',num,xS,yS+r*lh,lw-1,lh-1);
+  }
+  return out;
+}
+
 function buildMap(){
   if(document.getElementById('map-inner').innerHTML.trim())return;
-  const inSale=['BK-5','BM-12','AT-3','AW-8','BS-17','BN-22'],
-        sold=['BG-1','BG-3','BG-5','BK-1','BK-2','BK-3','AN-1','AN-4','AN-6','AR-5','AR-8','AS-3'],
-        resv=['BM-7','BN-14','BS-2','AT-9'];
-  const mzRows=[
-    {id:'BG',yS:24,yE:100,s:'l'},{id:'AN',yS:24,yE:100,s:'r'},
-    {id:'BK',yS:118,yE:210,s:'l'},{id:'AR',yS:118,yE:210,s:'r'},
-    {id:'BM',yS:228,yE:310,s:'l'},{id:'AS',yS:228,yE:310,s:'r'},
-    {id:'BN',yS:328,yE:400,s:'l'},{id:'AT',yS:328,yE:400,s:'r'},
-    {id:'BR',yS:418,yE:490,s:'l'},{id:'AW',yS:418,yE:490,s:'r'},
-    {id:'BS',yS:508,yE:574,s:'l'},{id:'AX',yS:508,yE:574,s:'r'},
+  buildMapSVG();
+}
+
+async function buildMapSVG(){
+  await loadLotEstados();
+
+  // ════════════════════════════════════════════════
+  //  DIMENSIONES DEL CANVAS
+  //  Ancho: 26(MV) + 22(MV lotes) + 8(gap) + 290(izq) + 20(Bogotá) + 290(der) + 8(gap) + 26(RSP) = ~730
+  //  Alto:  20(Telechea row) + 20(calle) + [5 bandas de manzanas] + 20(ultima calle) + 26(Falucho)
+  // ════════════════════════════════════════════════
+
+  const SVG_W = 820;
+  const SVG_H = 740;
+
+  // Calles laterales
+  const X_MV_STREET  = 0;    const W_MV_STREET  = 22; // Calle Montevideo
+  const X_MV_LOTES   = 22;   const W_MV_LOTES   = 22; // Lotes fila Montevideo
+  const X_LEFT_START = 46;   const W_LEFT       = 310; // Manzanas izquierda
+  const X_BOGOTA     = 358;  const W_BOGOTA     = 18;  // Calle Bogotá central
+  const X_RIGHT_START= 378;  const W_RIGHT      = 310; // Manzanas derecha
+  const X_RSP_START  = 690;  const W_RSP        = 22;  // Calle Roque Saenz Peña
+  // (820 - 690 - 22 - 8 ajuste)
+
+  // Franjas horizontales (Y positions)
+  const Y_TELECHEA_STREET = 0;   const H_TELECHEA_STREET = 16;
+  const Y_TELECHEA_LOTES  = 16;  const H_TELECHEA_LOTES  = 20; // fila lotes Telechea
+  const Y_CALLE_1         = 36;  const H_CALLE           = 14; // calles internas
+  // Manzanas normales: ~75px de alto cada una
+  const MZ_H = 74;
+  const BS_H = 100; // BS/AX más altas (4 filas)
+
+  const Y_BG  = Y_CALLE_1 + H_CALLE;       // 50
+  const Y_C2  = Y_BG + MZ_H;               // 124
+  const Y_BK  = Y_C2 + H_CALLE;            // 138
+  const Y_C3  = Y_BK + MZ_H;               // 212
+  const Y_BM  = Y_C3 + H_CALLE;            // 226
+  const Y_C4  = Y_BM + MZ_H;               // 300
+  const Y_BN  = Y_C4 + H_CALLE;            // 314
+  const Y_C5  = Y_BN + MZ_H;               // 388
+  const Y_BR  = Y_C5 + H_CALLE;            // 402
+  const Y_C6  = Y_BR + MZ_H;               // 476
+  const Y_BS  = Y_C6 + H_CALLE;            // 490
+  const Y_FALUCHO = Y_BS + BS_H;           // 590
+  const H_FALUCHO = SVG_H - Y_FALUCHO;
+
+  let svg=`<svg viewBox="0 0 ${SVG_W} ${SVG_H}" xmlns="http://www.w3.org/2000/svg" width="${SVG_W}" height="${SVG_H}">
+  <rect width="${SVG_W}" height="${SVG_H}" fill="#EDE8DF"/>`;
+
+  // ── CALLES HORIZONTALES ──
+  const callesH=[
+    {y:Y_TELECHEA_STREET, h:H_TELECHEA_STREET, label:'Calle Irene Telechea'},
+    {y:Y_C2, h:H_CALLE, label:'Calle Fabriciano Colmenares'},
+    {y:Y_C3, h:H_CALLE, label:'Calle Vicenta Nuñes'},
+    {y:Y_C4, h:H_CALLE, label:'Calle Arturo Jauretche'},
+    {y:Y_C5, h:H_CALLE, label:'Calle Jose Hernandez'},
+    {y:Y_C6, h:H_CALLE, label:'Calle Mary Alarcon'},
+    {y:Y_FALUCHO, h:H_FALUCHO, label:'Calle Falucho'},
   ];
-  const hSt=[{y:100,l:'Calle Fabriciano Colmenares'},{y:210,l:'Calle Vicenta Nuñes'},{y:310,l:'Calle Arturo Jauretche'},{y:400,l:'Calle Jose Hernandez'},{y:490,l:'Calle Mary Alarcon'}];
-  let svg=`<svg viewBox="0 0 760 600" xmlns="http://www.w3.org/2000/svg" width="760" height="600">
-  <rect width="760" height="600" fill="#EDE8DF"/>
-  <rect x="0" y="0" width="760" height="24" fill="#D4C9B8"/>
-  <text x="380" y="15" font-size="9" fill="#8A7060" text-anchor="middle" font-family="DM Sans,sans-serif">Calle Irene Telechea</text>
-  <rect x="0" y="574" width="760" height="26" fill="#D4C9B8"/>
-  <text x="380" y="589" font-size="9" fill="#8A7060" text-anchor="middle" font-family="DM Sans,sans-serif">Calle Falucho</text>
-  <rect x="0" y="0" width="26" height="600" fill="#D4C9B8"/>
-  <text x="13" y="300" font-size="8" fill="#8A7060" text-anchor="middle" transform="rotate(-90,13,300)" font-family="DM Sans,sans-serif">Calle Montevideo</text>
-  <rect x="734" y="0" width="26" height="600" fill="#D4C9B8"/>
-  <text x="747" y="300" font-size="8" fill="#8A7060" text-anchor="middle" transform="rotate(-90,747,300)" font-family="DM Sans,sans-serif">Calle Roque Saenz Peña</text>
-  <rect x="350" y="0" width="28" height="600" fill="#D4C9B8"/>
-  <text x="364" y="300" font-size="8" fill="#8A7060" text-anchor="middle" transform="rotate(-90,364,300)" font-family="DM Sans,sans-serif">Calle Bogotá</text>`;
-  hSt.forEach(s=>{svg+=`<rect x="26" y="${s.y}" width="708" height="18" fill="#D4C9B8"/><text x="380" y="${s.y+12}" font-size="8" fill="#8A7060" text-anchor="middle" font-family="DM Sans,sans-serif">${s.l}</text>`;});
-  mzRows.forEach(mz=>{
-    const xS=mz.s==='l'?28:380,xE=mz.s==='l'?350:732,mzW=xE-xS,mzH=mz.yE-mz.yS,cols=15,rows=Math.max(2,Math.floor(mzH/22)),lw=(mzW-8)/cols,lh=(mzH-8)/rows;
-    svg+=`<text x="${xS+mzW/2}" y="${mz.yS+mzH/2+5}" font-size="14" fill="#C4703A44" text-anchor="middle" font-family="Playfair Display,serif" font-weight="700">${mz.id}</text>`;
-    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
-      const lid=`${mz.id}-${r*cols+c+1}`,lx=(xS+4+c*lw).toFixed(1),ly=(mz.yS+4+r*lh).toFixed(1),w=(lw-1).toFixed(1),h=(lh-1).toFixed(1),n=r*cols+c+1;
-      let cls='lote';
-      if(sold.includes(lid))cls+=' vendido';else if(resv.includes(lid))cls+=' reservado';else if(inSale.includes(lid))cls+=' en-venta';
-      const st=cls.includes('vendido')?'Vendido':cls.includes('reservado')?'Reservado':cls.includes('en-venta')?'En venta':'Disponible';
-      svg+=`<rect class="${cls}" x="${lx}" y="${ly}" width="${w}" height="${h}" rx="1.5" onmouseover="tt(event,'${mz.id}','${n}','${st}')" onmouseout="th()" onclick="showToast('🏞️ Mzna. ${mz.id} · Lote ${n} · ${st}')"/>`;
-      if(lw>16)svg+=`<text x="${(parseFloat(lx)+parseFloat(w)/2).toFixed(1)}" y="${(parseFloat(ly)+parseFloat(h)/2+2).toFixed(1)}" font-size="6" fill="#3D2B1A" text-anchor="middle" pointer-events="none">${n}</text>`;
+  callesH.forEach(c=>{
+    svg+=`<rect x="0" y="${c.y}" width="${SVG_W}" height="${c.h}" fill="#D4C9B8"/>
+    <text x="${SVG_W/2}" y="${c.y+c.h/2+4}" font-size="8" fill="#6A5848" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="600">${c.label}</text>`;
+  });
+
+  // ── CALLES VERTICALES ──
+  // Calle Montevideo (izquierda)
+  svg+=`<rect x="${X_MV_STREET}" y="0" width="${W_MV_STREET}" height="${SVG_H}" fill="#D4C9B8"/>
+  <text x="${X_MV_STREET+W_MV_STREET/2}" y="${SVG_H/2}" font-size="8" fill="#6A5848" text-anchor="middle" transform="rotate(-90,${X_MV_STREET+W_MV_STREET/2},${SVG_H/2})" font-family="DM Sans,sans-serif" font-weight="600">Calle Montevideo</text>`;
+
+  // Calle Bogotá (centro)
+  svg+=`<rect x="${X_BOGOTA}" y="0" width="${W_BOGOTA}" height="${SVG_H}" fill="#D4C9B8"/>
+  <text x="${X_BOGOTA+W_BOGOTA/2}" y="${SVG_H/2}" font-size="8" fill="#6A5848" text-anchor="middle" transform="rotate(-90,${X_BOGOTA+W_BOGOTA/2},${SVG_H/2})" font-family="DM Sans,sans-serif" font-weight="600">Calle Bogotá</text>`;
+
+  // Calle Roque Saenz Peña (derecha)
+  svg+=`<rect x="${X_RSP_START}" y="0" width="${W_RSP}" height="${SVG_H}" fill="#D4C9B8"/>
+  <text x="${X_RSP_START+W_RSP/2}" y="${SVG_H/2}" font-size="8" fill="#6A5848" text-anchor="middle" transform="rotate(-90,${X_RSP_START+W_RSP/2},${SVG_H/2})" font-family="DM Sans,sans-serif" font-weight="600">Calle Roque Saenz Peña</text>`;
+
+  // ── FILA TELECHEA: lotes chicos sobre la calle superior ──
+  // Izquierda: ~26 lotes (BG frente al norte)
+  const telCols = 26;
+  const telLw = W_LEFT / telCols;
+  for(let c=0;c<telCols;c++){
+    const num=telCols-c;
+    svg+=makeLote('BG-N',num, X_LEFT_START+c*telLw, Y_TELECHEA_LOTES, telLw-1, H_TELECHEA_LOTES-1);
+  }
+  // Derecha: ~26 lotes (AN frente al norte)
+  for(let c=0;c<telCols;c++){
+    const num=telCols-c;
+    svg+=makeLote('AN-N',num, X_RIGHT_START+c*telLw, Y_TELECHEA_LOTES, telLw-1, H_TELECHEA_LOTES-1);
+  }
+
+  // ── COLUMNA MONTEVIDEO: lotes sobre la calle lateral izquierda ──
+  // Hay lotes numerados aprox del 38 al 58 en el lateral
+  const mvBands=[
+    {y:Y_BG,  h:MZ_H, start:38, count:6},
+    {y:Y_BK,  h:MZ_H, start:44, count:6},
+    {y:Y_BM,  h:MZ_H, start:50, count:5},
+    {y:Y_BN,  h:MZ_H, start:55, count:5},
+    {y:Y_BR,  h:MZ_H, start:60, count:5},
+    {y:Y_BS,  h:BS_H, start:65, count:6},
+  ];
+  mvBands.forEach(b=>{
+    const lh=b.h/b.count;
+    for(let i=0;i<b.count;i++){
+      svg+=makeLote('MV',b.start+i, X_MV_LOTES, b.y+i*lh, W_MV_LOTES-1, lh-1);
     }
   });
+
+  // ── MANZANAS NORMALES (2 filas × 26-28 lotes) ──
+  // Izquierda: BG, BK, BM, BN, BR
+  // Derecha: AN, AR, AS, AT, AW
+  const normalMzL=[
+    {id:'BG', y:Y_BG},{id:'BK',y:Y_BK},{id:'BM',y:Y_BM},{id:'BN',y:Y_BN},{id:'BR',y:Y_BR}
+  ];
+  const normalMzR=[
+    {id:'AN',y:Y_BG},{id:'AR',y:Y_BK},{id:'AS',y:Y_BM},{id:'AT',y:Y_BN},{id:'AW',y:Y_BR}
+  ];
+  normalMzL.forEach(mz=>{
+    svg+=drawManzana(mz.id, X_LEFT_START, mz.y, W_LEFT, MZ_H, 28);
+  });
+  normalMzR.forEach(mz=>{
+    svg+=drawManzana(mz.id, X_RIGHT_START, mz.y, W_RIGHT, MZ_H, 28);
+  });
+
+  // ── MANZANAS BS y AX (4 filas, lotes más grandes) ──
+  svg+=drawManzanaBS('BS', X_LEFT_START,  Y_BS, W_LEFT,  BS_H);
+  svg+=drawManzanaBS('AX', X_RIGHT_START, Y_BS, W_RIGHT, BS_H);
+
   svg+=`</svg>`;
   document.getElementById('map-inner').innerHTML=svg;
 }
-function tt(e,mz,n,st){const t=document.getElementById('map-tt'),r=document.getElementById('map-view').getBoundingClientRect();t.innerHTML=`<strong style="color:#E8A97A">Mzna. ${mz} · Lote ${n}</strong><div>${st}</div>`;t.style.cssText=`left:${e.clientX-r.left+10}px;top:${e.clientY-r.top+10}px;opacity:1`;}
-function th(){document.getElementById('map-tt').style.opacity='0';}
 
-// ── INIT ──
-loadHome();
-</script>
-</body>
-</html>
+function tt(e,mz,n,st){const t=document.getElementById('map-tt'),r=document.getElementById('map-view').getB
